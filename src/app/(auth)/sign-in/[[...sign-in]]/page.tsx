@@ -1,0 +1,62 @@
+import { SignIn } from "@clerk/nextjs";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
+
+export default function SignInPage() {
+  return (
+    <main className="min-h-screen flex font-sans">
+      
+      {/* 🟦 LADO IZQUIERDO: Branding (Oculto en móvil, visible en PC) */}
+      <div className="hidden lg:flex w-1/2 bg-slate-900 relative flex-col justify-between p-12 overflow-hidden border-r border-slate-800">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none"></div>
+        
+        <div className="relative z-10">
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-white font-bold transition-colors mb-16 text-sm">
+            <ArrowLeft className="w-4 h-4" />
+            Volver al inicio
+          </Link>
+          
+          <div className="flex items-center gap-4 mb-10">
+            <Image src="/logo.svg" alt="Mascotiq Logo" width={56} height={56} className="w-14 h-14" />
+            <span className="text-4xl font-black text-white tracking-tighter">Mascotiq</span>
+          </div>
+          
+          <h1 className="text-4xl xl:text-5xl font-black text-white leading-[1.15] mb-6">
+            Bienvenido de nuevo a la <br/>
+            <span className="text-emerald-400">nutrición inteligente.</span>
+          </h1>
+          <p className="text-slate-400 text-lg max-w-md leading-relaxed">
+            Accede a tu panel para gestionar la suscripción de tu mascota, revisar su diagnóstico y consultar con nuestro asistente veterinario IA.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex items-center gap-4 text-slate-400 bg-slate-800/50 p-4 rounded-2xl w-max border border-slate-700/50">
+           <ShieldCheck className="w-6 h-6 text-emerald-500" />
+           <p className="font-medium text-sm">Acceso seguro encriptado</p>
+        </div>
+      </div>
+
+      {/* ⬜ LADO DERECHO: Formulario Clerk */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center bg-slate-50 relative p-6">
+        
+        {/* Botón y Logo solo para Móvil */}
+        <Link href="/" className="lg:hidden absolute top-6 left-6 inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 font-bold transition-colors text-sm bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+          <ArrowLeft className="w-4 h-4" />
+          Volver
+        </Link>
+
+        <div className="lg:hidden flex flex-col items-center mb-8 mt-12">
+           <Image src="/logo.svg" alt="Mascotiq Logo" width={72} height={72} className="w-16 h-16 mb-3 drop-shadow-sm" />
+           <span className="text-2xl font-black text-slate-900 tracking-tighter">Mascotiq</span>
+        </div>
+
+        {/* Contenedor de Clerk (Sin restricciones de altura para evitar scroll) */}
+        <div className="w-full flex justify-center">
+          <SignIn fallbackRedirectUrl="/dashboard" />
+        </div>
+      </div>
+
+    </main>
+  );
+}
