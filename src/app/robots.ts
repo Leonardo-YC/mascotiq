@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 
-// FIX: sin trailing slash para evitar //sitemap.xml
-const baseUrl = 'https://mascotiq.vercel.app';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mascotiq.vercel.app';
 
 export default function robots(): MetadataRoute.Robots {
   return {

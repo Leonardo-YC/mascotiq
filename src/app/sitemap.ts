@@ -1,57 +1,23 @@
 import { MetadataRoute } from "next";
 
-// FIX: sin trailing slash en la baseUrl para evitar //sitemap.xml
-const baseUrl = "https://mascotiq.vercel.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mascotiq.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/quiz`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/planes`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/catalogo`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/nosotros`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/terminos`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/privacidad`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/reembolsos`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.4,
-    },
-  ];
+  const routes = [
+    "",
+    "/quiz",
+    "/planes",
+    "/catalogo",
+    "/nosotros",
+    "/terminos",
+    "/privacidad",
+    "/reembolsos",
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: (route === "/catalogo" ? "weekly" : route === "/quiz" ? "monthly" : "yearly") as any,
+    priority: route === "" ? 1 : route === "/quiz" ? 0.9 : 0.7,
+  }));
+
+  return routes;
 }
