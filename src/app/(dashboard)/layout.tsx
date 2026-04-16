@@ -13,8 +13,6 @@ export default function DashboardLayout({
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-sm font-medium text-slate-400">
         © {new Date().getFullYear()} Mascotiq. Panel de Control Seguro.
       </footer>
-      {/* FIX: CookieBanner también en el dashboard */}
-      <CookieBanner />
     </div>
   );
 }

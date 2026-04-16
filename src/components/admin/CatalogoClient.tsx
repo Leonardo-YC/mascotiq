@@ -118,9 +118,10 @@ export function CatalogoClient({
             Gestiona los suplementos y asigna cada uno a sus planes correspondientes.
           </p>
         </div>
+        {/* 📱 Responsivo: w-full en móvil, w-auto en tablet/PC */}
         <button
           onClick={() => openModal("create")}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm text-sm"
+          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors shadow-sm text-sm shrink-0"
         >
           <Plus className="w-4 h-4" /> Nuevo Producto
         </button>
@@ -128,23 +129,25 @@ export function CatalogoClient({
 
       {/* Buscador */}
       <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-        <Search className="w-5 h-5 text-slate-400 ml-2" />
+        <Search className="w-5 h-5 text-slate-400 ml-2 shrink-0" />
         <input
           type="text"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           placeholder="Buscar por nombre o categoría..."
-          className="flex-1 bg-transparent border-none focus:outline-none text-slate-700 font-medium placeholder:text-slate-400 text-sm"
+          className="flex-1 bg-transparent border-none focus:outline-none text-slate-700 font-medium placeholder:text-slate-400 text-sm min-w-0"
         />
-        <span className="text-xs text-slate-400 font-medium mr-2">
+        {/* 📱 Responsivo: Ocultamos el contador en pantallas extra pequeñas (<400px) para no apretar el buscador */}
+        <span className="text-xs text-slate-400 font-medium mr-2 shrink-0 hidden min-[400px]:inline-block whitespace-nowrap">
           {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      {/* 📱 Responsivo: overflow-x-auto, márgenes negativos para que llegue al borde en móvil y min-w-[750px] para evitar aplastamiento */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full max-w-[100vw]">
+        <div className="overflow-x-auto w-full -mx-4 px-4 sm:mx-0 sm:px-0">
+          <table className="w-full text-left border-collapse min-w-[750px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-wider">
                 <th className="p-4">Producto</th>
@@ -158,7 +161,7 @@ export function CatalogoClient({
             <tbody className="divide-y divide-slate-100">
               {filteredProducts.map(product => (
                 <tr key={product.id} className={`hover:bg-slate-50 transition-colors ${!product.isActive ? "opacity-50" : ""}`}>
-                  <td className="p-4 flex items-center gap-3">
+                  <td className="p-4 flex items-center gap-3 min-w-[200px]">
                     {product.imageUrl ? (
                       <img src={product.imageUrl} alt={product.name} className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" />
                     ) : (
@@ -166,9 +169,10 @@ export function CatalogoClient({
                         <Package className="w-5 h-5 text-slate-400" />
                       </div>
                     )}
-                    <span className="font-bold text-slate-900 text-sm line-clamp-1">{product.name}</span>
+                    {/* 📱 Responsivo: line-clamp para que nombres muy largos no rompan la fila */}
+                    <span className="font-bold text-slate-900 text-sm line-clamp-2">{product.name}</span>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <span className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border border-emerald-100">
                       {product.categoryName || "General"}
                     </span>
@@ -177,7 +181,7 @@ export function CatalogoClient({
                     {product.planNames.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {product.planNames.map(pn => (
-                          <span key={pn} className="text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded-full">
+                          <span key={pn} className="text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
                             {pn.replace("Plan Senior ", "")}
                           </span>
                         ))}
@@ -186,10 +190,10 @@ export function CatalogoClient({
                       <span className="text-xs text-slate-400 italic">Sin plan</span>
                     )}
                   </td>
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <span className="text-slate-900 font-black text-sm">S/ {product.subscriptionPrice}</span>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       product.isActive
                         ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
@@ -198,7 +202,7 @@ export function CatalogoClient({
                       {product.isActive ? "Activo" : "Oculto"}
                     </span>
                   </td>
-                  <td className="p-4 flex justify-end gap-1">
+                  <td className="p-4 flex justify-end gap-1 whitespace-nowrap">
                     <button
                       onClick={() => toggleProductActive(product.id, !product.isActive)}
                       className={`p-2 rounded-lg transition-colors ${product.isActive ? "text-slate-400 hover:text-amber-600 hover:bg-amber-50" : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"}`}
@@ -247,25 +251,53 @@ export function CatalogoClient({
               onClick={e => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
+              <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <Package className="w-5 h-5 text-emerald-600" />
-                  {modalState.mode === "create" ? "Agregar Producto" : "Editar Producto"}
+                  <span className="truncate">{modalState.mode === "create" ? "Agregar Producto" : "Editar Producto"}</span>
                 </h3>
-                <button onClick={closeModal} className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-200 rounded-full transition-colors">
+                <button onClick={closeModal} className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-200 rounded-full transition-colors shrink-0">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Body: formulario izquierda + imagen derecha */}
-              <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
+              <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden min-h-0">
 
                 {/* Formulario */}
+                {/* 📱 Responsivo: w-full en móvil, overflow-y-auto habilitado en móvil también */}
                 <form
                   onSubmit={handleSubmit}
-                  className="flex flex-col gap-4 p-6 overflow-y-auto md:w-[55%] md:border-r md:border-slate-100"
+                  className="flex flex-col gap-4 p-4 sm:p-6 md:overflow-y-auto w-full md:w-[55%] md:border-r md:border-slate-100"
                 >
                   <input type="hidden" name="imageUrl" value={imageUrl} />
+
+                  {/* 📱 IMAGEN UPLOADER MÓVIL (Solo se ve en pantallas < md) */}
+                  <div className="md:hidden flex flex-col gap-3 mb-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5" /> Fotografía del Producto
+                    </label>
+                    <div className="relative w-full sm:w-2/3 mx-auto rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 bg-white" style={{ paddingTop: "75%" }}>
+                      {imageUrl ? (
+                        <>
+                          <img src={imageUrl} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                          <button type="button" onClick={() => setImageUrl("")} className="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700 z-10">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                          <ShoppingBag className="w-8 h-8 text-slate-200" strokeWidth={1.2} />
+                        </div>
+                      )}
+                    </div>
+                    {!imageUrl && (
+                      <div className="space-y-2 mt-2">
+                        <ImageUpload value={imageUrl} onChange={setImageUrl} isProduct={true} />
+                        <p className="text-center text-[10px] text-slate-400 font-medium">JPG, PNG o WebP · máx. 4 MB</p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Nombre */}
                   <div>
@@ -319,7 +351,8 @@ export function CatalogoClient({
                   </div>
 
                   {/* Precios */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* 📱 Responsivo: 1 columna en móviles muy pequeños, 2 columnas desde 'sm' */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Precio referencial (S/)</label>
                       <input
@@ -392,14 +425,14 @@ export function CatalogoClient({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full mt-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl flex justify-center items-center gap-2 transition-colors disabled:opacity-50 text-sm"
+                    className="w-full mt-4 md:mt-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 transition-colors disabled:opacity-50 text-sm shadow-sm"
                   >
                     <Save className="w-4 h-4" />
                     {isSubmitting ? "Guardando..." : "Guardar Producto"}
                   </button>
                 </form>
 
-                {/* Columna imagen */}
+                {/* 🖥️ Columna imagen DESKTOP (Solo se ve en md en adelante) */}
                 <div className="hidden md:flex flex-col md:w-[45%] bg-slate-50 p-6 gap-4 overflow-y-auto">
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5" /> Fotografía del Producto

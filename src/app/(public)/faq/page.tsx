@@ -106,27 +106,33 @@ export default function FaqPage() {
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
             Preguntas Frecuentes
           </h1>
-          <p className="text-lg text-slate-500 leading-relaxed">
-            Todo lo que necesitas saber sobre Mascotiq, los planes, los envíos y el asistente IA.
+          <p className="text-lg text-slate-500 leading-relaxed font-medium">
+            Todo lo que necesitas saber sobre Mascotiq <span className="text-emerald-600">.</span>
           </p>
         </div>
 
         <div className="space-y-10">
           {faqs.map(section => (
             <div key={section.category}>
-              <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 px-2">
+              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2">
                 {section.category}
               </h2>
               <div className="space-y-3">
                 {section.items.map((faq, i) => (
-                  <details key={i} className="group bg-white rounded-2xl border border-slate-200 p-5 cursor-pointer shadow-sm hover:border-emerald-200 transition-colors">
-                    <summary className="flex justify-between items-center font-bold text-slate-900 text-sm md:text-base list-none">
-                      {faq.q}
-                      <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-300 group-open:rotate-180 shrink-0 ml-4" />
+                  <details 
+                    key={i} 
+                    className="group bg-white rounded-2xl border border-slate-200 cursor-pointer shadow-sm hover:border-emerald-200 transition-all duration-300 open:ring-1 open:ring-emerald-500/20"
+                  >
+                    <summary className="flex justify-between items-center font-bold text-slate-900 text-sm md:text-base list-none p-5 select-none">
+                      <span className="pr-4">{faq.q}</span>
+                      <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-500 group-open:rotate-180 shrink-0" />
                     </summary>
-                    <p className="text-slate-600 mt-4 leading-relaxed text-sm border-t border-slate-100 pt-4">
-                      {faq.a}
-                    </p>
+                    {/* Animación de entrada para la respuesta */}
+                    <div className="px-5 pb-5 animate-in fade-in slide-in-from-top-2 duration-500">
+                      <p className="text-slate-600 leading-relaxed text-sm border-t border-slate-100 pt-4">
+                        {faq.a}
+                      </p>
+                    </div>
                   </details>
                 ))}
               </div>
@@ -135,13 +141,16 @@ export default function FaqPage() {
         </div>
 
         {/* CTA de contacto */}
-        <div className="mt-14 bg-slate-900 rounded-2xl p-8 text-center text-white">
-          <MessageCircle className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
-          <h3 className="text-xl font-black mb-2">¿No encontraste tu respuesta?</h3>
-          <p className="text-slate-400 text-sm mb-6">Nuestro equipo está disponible para ayudarte con cualquier duda específica.</p>
+        <div className="mt-16 bg-slate-900 rounded-[2.5rem] p-10 text-center text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
+          <MessageCircle className="w-12 h-12 text-emerald-400 mx-auto mb-5" />
+          <h3 className="text-2xl font-black mb-3">¿Aún tienes dudas?</h3>
+          <p className="text-slate-400 text-sm mb-8 max-w-sm mx-auto font-medium">
+            Si no encontraste lo que buscabas, nuestro equipo de soporte está listo para ayudarte personalmente.
+          </p>
           <Link
             href="/contacto"
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition-all text-sm"
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 py-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-widest"
           >
             Contactar al equipo
           </Link>

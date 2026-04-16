@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Send, Mail, MessageCircle, Clock, CheckCircle } from "lucide-react";
+import { Send, Mail, MessageCircle, Clock, CheckCircle, AlertTriangle, ChevronDown } from "lucide-react";
 import { sendContactForm } from "@/actions/contact-action";
 
 export default function ContactoPage() {
@@ -27,35 +27,32 @@ export default function ContactoPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-slate-50 py-10 md:py-16 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto">
 
-        {/* Cabecera */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100/80 text-emerald-800 text-sm font-bold mb-5 border border-emerald-200">
-            <MessageCircle className="w-4 h-4" />
-            Estamos para ayudarte
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+        {/* ── Cabecera Limpia y Responsive ── */}
+        <div className="text-center mb-10 md:mb-14 px-2">
+          <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
             Contáctanos
           </h1>
-          <p className="text-lg text-slate-500 max-w-xl mx-auto leading-relaxed">
-            ¿Tienes dudas sobre los planes, tu suscripción o el diagnóstico nutricional? Escríbenos y te respondemos en menos de 24 horas.
+          <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium">
+            Estamos para ayudarte. ¿Tienes dudas sobre los planes o el diagnóstico? 
+            Escríbenos y te responderemos en menos de 24 horas.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
 
-          {/* Info rápida */}
-          <div className="space-y-5">
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-start gap-4">
+          {/* Info rápida (Se apila arriba en móvil, sidebar en PC) */}
+          <div className="space-y-4 md:space-y-5">
+            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-start gap-4 hover:border-emerald-200 transition-colors">
               <div className="bg-emerald-50 p-2.5 rounded-xl shrink-0">
                 <Mail className="w-5 h-5 text-emerald-600" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="font-bold text-slate-900 text-sm">Email directo</p>
-                <a href="mailto:hola@mascotiq.com" className="text-emerald-600 text-sm font-medium hover:underline">
-                  hola@mascotiq.com
+                <a href="mailto:leonardoyupan2012@gmail.com" className="text-emerald-600 text-sm font-medium hover:underline break-all">
+                  leonardoyupan2012@gmail.com
                 </a>
               </div>
             </div>
@@ -70,122 +67,102 @@ export default function ContactoPage() {
               </div>
             </div>
 
-            <div className="bg-slate-900 rounded-2xl p-5 text-white">
-              <p className="font-bold text-sm mb-2">¿Tienes una emergencia de salud?</p>
-              <p className="text-slate-400 text-xs leading-relaxed">
-                Para emergencias veterinarias, acude inmediatamente a tu clínica local. Mascotiq ofrece orientación nutricional, no atención de urgencias.
-              </p>
+            <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg">
+              <div className="relative z-10">
+                <p className="font-bold text-sm mb-2 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  ¿Emergencia de salud?
+                </p>
+                <p className="text-slate-400 text-xs leading-relaxed font-medium">
+                  Para urgencias veterinarias, acude a tu clínica local. Mascotiq ofrece orientación nutricional preventiva.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Formulario */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-8">
+          {/* Formulario (Ocupa 2 columnas en PC) */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-10">
             {success ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-5">
-                  <CheckCircle className="w-8 h-8 text-emerald-600" />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">¡Mensaje enviado!</h3>
-                <p className="text-slate-500 text-sm max-w-sm">
-                  Recibimos tu mensaje correctamente. Te responderemos en las próximas 24 horas.
+              <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
+                <CheckCircle className="w-16 h-16 text-emerald-600 mb-4" />
+                <h3 className="text-2xl font-black text-slate-900 mb-2">¡Mensaje enviado!</h3>
+                <p className="text-slate-500 text-sm max-w-sm font-medium">
+                  Recibimos tu mensaje correctamente. Te responderemos muy pronto.
                 </p>
-                <button
-                  onClick={() => { setSuccess(false); setForm({ name: "", email: "", subject: "", message: "" }); }}
-                  className="mt-6 text-emerald-600 font-bold text-sm hover:underline"
+                <button 
+                  onClick={() => setSuccess(false)} 
+                  className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all"
                 >
                   Enviar otro mensaje
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1.5">
-                      Tu nombre
-                    </label>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Tu nombre</label>
                     <input
-                      name="name"
-                      type="text"
-                      required
-                      value={form.name}
-                      onChange={handleChange}
+                      name="name" type="text" required value={form.name} onChange={handleChange}
                       placeholder="José Leonardo"
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none text-slate-900 text-sm transition-colors"
+                      className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-100 focus:border-emerald-500 focus:outline-none text-slate-900 text-sm transition-all"
                     />
                   </div>
-                  <div>
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1.5">
-                      Tu correo
-                    </label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Tu correo</label>
                     <input
-                      name="email"
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={handleChange}
+                      name="email" type="email" required value={form.email} onChange={handleChange}
                       placeholder="tu@correo.com"
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none text-slate-900 text-sm transition-colors"
+                      className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-100 focus:border-emerald-500 focus:outline-none text-slate-900 text-sm transition-all"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1.5">
-                    Asunto
-                  </label>
-                  <select
-                    name="subject"
-                    required
-                    value={form.subject}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none text-slate-700 text-sm bg-white transition-colors"
-                  >
-                    <option value="">Selecciona un tema...</option>
-                    <option value="Consulta sobre planes">Consulta sobre planes</option>
-                    <option value="Problema con mi suscripción">Problema con mi suscripción</option>
-                    <option value="Duda sobre el diagnóstico">Duda sobre el diagnóstico</option>
-                    <option value="Problema técnico">Problema técnico</option>
-                    <option value="Pedido y envíos">Pedido y envíos</option>
-                    <option value="Otro">Otro</option>
-                  </select>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Asunto</label>
+                  <div className="relative">
+                    <select
+                      name="subject" required value={form.subject} onChange={handleChange}
+                      className="w-full appearance-none px-4 py-3.5 rounded-xl border-2 border-slate-100 focus:border-emerald-500 focus:outline-none text-slate-700 text-sm bg-white transition-all pr-10 cursor-pointer"
+                    >
+                      <option value="">Selecciona un tema...</option>
+                      <option value="Consulta sobre planes">Consulta sobre planes</option>
+                      <option value="Problema con mi suscripción">Problema con mi suscripción</option>
+                      <option value="Duda sobre el diagnóstico">Duda sobre el diagnóstico</option>
+                      <option value="Pedido y envíos">Pedido y envíos</option>
+                      <option value="Otro">Otro asunto</option>
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1.5">
-                    Mensaje
-                  </label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Mensaje</label>
                   <textarea
-                    name="message"
-                    required
-                    rows={5}
-                    value={form.message}
-                    onChange={handleChange}
-                    placeholder="Cuéntanos con detalle cómo podemos ayudarte..."
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none text-slate-900 text-sm resize-none transition-colors"
+                    name="message" required rows={5} value={form.message} onChange={handleChange}
+                    placeholder="Cuéntanos cómo podemos ayudarte..."
+                    className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-100 focus:border-emerald-500 focus:outline-none text-slate-900 text-sm resize-none transition-all"
                   />
                 </div>
 
                 {error && (
-                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-                    {error}
+                  <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 animate-in fade-in">
+                    ⚠️ {error}
                   </p>
                 )}
 
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 text-sm"
+                  type="submit" disabled={isSubmitting}
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed text-sm"
                 >
                   {isSubmitting ? (
-                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Enviando...</>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <><Send className="w-4 h-4" /> Enviar mensaje</>
                   )}
                 </button>
 
-                <p className="text-xs text-slate-400 text-center">
-                  Al enviar este formulario, aceptas nuestra{" "}
-                  <a href="/privacidad" className="text-emerald-600 hover:underline">Política de Privacidad</a>.
+                <p className="text-xs text-slate-400 text-center font-medium">
+                  Al enviar, aceptas nuestra <a href="/privacidad" className="text-emerald-600 hover:underline">Política de Privacidad</a>.
                 </p>
               </form>
             )}

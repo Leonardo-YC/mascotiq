@@ -4,7 +4,7 @@ import { db } from "@/lib/db/index";
 import { pets, subscriptions, plans, orders, planProducts, products } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
-import { CheckCircle, Clock } from "lucide-react";
+import { CheckCircle, Clock, LayoutDashboard } from "lucide-react";
 import { stripe } from "@/lib/stripe/index";
 
 export default async function DashboardPage({
@@ -19,17 +19,10 @@ export default async function DashboardPage({
   const isSuccess = resolvedParams.success === "true";
   const sessionId = resolvedParams.session_id as string | undefined;
 
-  // ── FIX: Timing del webhook ──────────────────────────────────────────
-  // Cuando Stripe redirige de vuelta con ?success=true&session_id=xxx,
-  // el webhook puede no haber disparado aún. Si la suscripción no aparece
-  // en nuestra BD 2 segundos después del pago, mostramos un aviso.
-  // Como este es un Server Component, no podemos hacer polling real,
-  // pero podemos verificar directamente con Stripe si el session_id existe.
   let pendingActivation = false;
 
   if (isSuccess && sessionId) {
     try {
-      // Verificar si ya tenemos la suscripción en nuestra BD
       const existingSubs = await db
         .select({ id: subscriptions.id })
         .from(subscriptions)
@@ -37,11 +30,7 @@ export default async function DashboardPage({
         .limit(1);
 
       if (existingSubs.length === 0) {
-        // El webhook aún no procesó — indicamos estado pendiente
         pendingActivation = true;
-        
-        // Intentamos crear la suscripción directamente desde la session de Stripe
-        // como fallback en caso de que el webhook falle o demore
         try {
           const session = await stripe.checkout.sessions.retrieve(sessionId, {
             expand: ["subscription"],
@@ -62,7 +51,6 @@ export default async function DashboardPage({
                 ? new Date(stripeSub.current_period_end * 1000)
                 : new Date();
 
-              // Upsert: solo crear si no existe ya (el webhook puede haber llegado mientras tanto)
               const existing = await db
                 .select({ id: subscriptions.id })
                 .from(subscriptions)
@@ -87,32 +75,26 @@ export default async function DashboardPage({
                   status: "Pendiente",
                 });
               }
-
               pendingActivation = false;
             }
           }
         } catch (stripeErr) {
           console.error("Error verificando sesión de Stripe:", stripeErr);
-          // pendingActivation sigue siendo true, el usuario verá el aviso
         }
       }
     } catch (err) {
       console.error("Error verificando suscripción:", err);
     }
   }
-  // ────────────────────────────────────────────────────────────────────
 
-  // 1. Mascotas del usuario
   const userPets = await db.select().from(pets).where(eq(pets.userId, user.id));
 
-  // 2. Suscripciones con plan
   const subsData = await db
     .select({ subscription: subscriptions, plan: plans })
     .from(subscriptions)
     .leftJoin(plans, eq(subscriptions.planId, plans.id))
     .where(eq(subscriptions.userId, user.id));
 
-  // 3. Enriquecer con productos y pedidos
   const enrichedSubs = await Promise.all(
     subsData.map(async sub => {
       if (!sub.plan) return { ...sub, products: [], orders: [] };
@@ -138,40 +120,44 @@ export default async function DashboardPage({
   );
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Control</h1>
-          <p className="text-gray-500 mt-1">Gestiona las suscripciones y perfiles de tus mascotas.</p>
+    <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-6xl mx-auto space-y-10">
+        
+        {/* Encabezado Boutique */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest mb-3 border border-slate-200">
+              <LayoutDashboard className="w-3.5 h-3.5" /> Área de Cliente
+            </div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Mi Panel</h1>
+            <p className="text-slate-500 mt-2 font-medium">Gestiona las suscripciones y el perfil biológico de tus mascotas.</p>
+          </div>
         </div>
 
-        {/* Banner de éxito normal */}
+        {/* Banner de éxito */}
         {isSuccess && !pendingActivation && (
-          <div className="bg-green-50 border border-green-200 p-5 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-4 shadow-sm">
-            <div className="bg-green-100 p-2.5 rounded-full text-green-600">
-              <CheckCircle className="w-7 h-7" />
+          <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-3xl flex items-start sm:items-center gap-5 animate-in slide-in-from-top-4 shadow-sm">
+            <div className="bg-emerald-500 p-3 rounded-full text-white shadow-lg shadow-emerald-500/20 shrink-0">
+              <CheckCircle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-green-900">¡Suscripción activada con éxito!</h3>
-              <p className="text-green-700 text-sm">Tu plan nutricional personalizado ya está en marcha. Tu primera caja está siendo preparada.</p>
+              <h3 className="font-black text-emerald-900 text-lg tracking-tight">¡Suscripción activada con éxito!</h3>
+              <p className="text-emerald-700 text-sm font-medium mt-1">Tu plan nutricional personalizado ya está en marcha. Tu primera caja está siendo preparada.</p>
             </div>
           </div>
         )}
 
         {/* Banner de activación pendiente */}
         {isSuccess && pendingActivation && (
-          <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-4 shadow-sm">
-            <div className="bg-amber-100 p-2.5 rounded-full text-amber-600">
-              <Clock className="w-7 h-7" />
+          <div className="bg-amber-50 border border-amber-200 p-6 rounded-3xl flex items-start sm:items-center gap-5 animate-in slide-in-from-top-4 shadow-sm">
+            <div className="bg-amber-500 p-3 rounded-full text-white shadow-lg shadow-amber-500/20 shrink-0">
+              <Clock className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-amber-900">¡Pago recibido! Tu plan se está activando...</h3>
-              <p className="text-amber-700 text-sm">
+              <h3 className="font-black text-amber-900 text-lg tracking-tight">¡Pago recibido! Activando plan...</h3>
+              <p className="text-amber-700 text-sm font-medium mt-1">
                 Esto puede tomar unos segundos.{" "}
-                <button
-                  onClick={() => window.location.reload()}
-                  className="underline font-bold hover:text-amber-900"
-                >
+                <button onClick={() => window.location.reload()} className="underline font-black hover:text-amber-900 transition-colors">
                   Actualiza la página
                 </button>{" "}
                 en un momento para ver tu plan activo.

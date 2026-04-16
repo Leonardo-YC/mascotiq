@@ -266,22 +266,16 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
                     )}
                   </div>
                   {/* Precio — ahora basado en el plan */}
-                  <div className="px-3 py-2.5 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                  <div className="px-3 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-end">
                     <div>
-                      {product.minPlanPrice ? (
-                        <>
-                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Plan desde</p>
-                          <p className="text-sm font-black text-slate-900">S/ {product.minPlanPrice}<span className="text-[10px] text-slate-400 font-medium">/mes</span></p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Plan</p>
-                          <p className="text-xs font-bold text-slate-400">Por confirmar</p>
-                        </>
-                      )}
+                      <p className="text-[9px] text-slate-400 font-extrabold uppercase tracking-tighter">Plan mensual</p>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-xs font-bold text-slate-900">S/</span>
+                        <span className="text-lg font-black text-slate-900">{product.minPlanPrice}</span>
+                      </div>
                     </div>
-                    <div className="bg-white p-1.5 rounded-lg shadow-sm border border-slate-200 group-hover:bg-emerald-600 group-hover:border-emerald-600 group-hover:text-white transition-all">
-                      <ArrowRight className="w-3.5 h-3.5" />
+                    <div className="bg-emerald-600 p-1.5 rounded-lg shadow-sm text-white group-hover:bg-emerald-500 transition-colors">
+                      <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
                 </Link>

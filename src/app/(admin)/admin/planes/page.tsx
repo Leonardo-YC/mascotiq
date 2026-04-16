@@ -12,27 +12,31 @@ export default async function PlanesManagerPage() {
   ]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 font-sans">
+    // 📱 Responsivo: space-y ajustado para móvil
+    <div className="space-y-6 md:space-y-10 animate-in fade-in duration-500 font-sans pb-8 md:pb-10">
       
       {/* 🚀 Cabecera */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1 md:px-0">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">Planes de Suscripción</h1>
-          <p className="text-slate-500 mt-2 font-medium">
-            Configura los 5 planes base, asígnales productos y actualiza sus precios sincronizados con Stripe.
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-widest mb-3 border border-slate-200">
+            <Layers className="w-3.5 h-3.5" /> Suscripciones
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter text-slate-900">Gestión de Planes</h1>
+          <p className="text-slate-500 mt-1 sm:mt-2 font-medium text-sm sm:text-base">
+            Configura los planes base, asigna fórmulas y sincroniza precios con Stripe.
           </p>
         </div>
       </div>
 
       {/* 💡 Banner Informativo */}
-      <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-start gap-4">
-        <div className="bg-blue-100 p-2 rounded-xl shrink-0">
-          <Zap className="w-5 h-5 text-blue-600" />
+      <div className="bg-blue-50 border border-blue-100 p-5 sm:p-6 rounded-2xl md:rounded-[2rem] flex items-start sm:items-center gap-4 sm:gap-5 shadow-sm">
+        <div className="bg-blue-600 p-3 rounded-xl sm:rounded-2xl shrink-0 text-white">
+          <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
         <div>
-          <h4 className="font-bold text-blue-900">Sincronización Automática</h4>
-          <p className="text-sm text-blue-700 mt-1">
-            Cualquier cambio de precio que guardes aquí se actualizará automáticamente en Stripe. No necesitas modificar nada en el panel de Stripe manualmente.
+          <h4 className="font-black text-blue-900 text-base sm:text-lg tracking-tight">Sincronización Automática</h4>
+          <p className="text-xs sm:text-sm text-blue-700 mt-1 font-medium leading-relaxed">
+            Cualquier cambio de precio que guardes aquí se actualizará automáticamente en la pasarela de pagos. No necesitas modificar nada en el panel de Stripe manualmente.
           </p>
         </div>
       </div>

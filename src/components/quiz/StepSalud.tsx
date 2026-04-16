@@ -14,7 +14,6 @@ const HEALTH_OPTIONS = [
 ];
 
 export function StepSalud({ form }: StepSaludProps) {
-  // Obtenemos el array actual de condiciones seleccionadas
   const selectedConditions = form.watch("healthConditions") || [];
 
   const toggleCondition = (id: string) => {
@@ -27,9 +26,9 @@ export function StepSalud({ form }: StepSaludProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl mx-auto">
-      <div className="text-center space-y-2 mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Cuidado Preventivo</h2>
-        <p className="text-gray-500 text-lg">¿Hay alguna condición de salud que te gustaría apoyar? (Opcional)</p>
+      <div className="text-center space-y-2 mb-10">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Cuidado Preventivo</h2>
+        <p className="text-slate-500 font-medium">¿Hay alguna condición específica que te gustaría apoyar? (Opcional)</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -40,15 +39,15 @@ export function StepSalud({ form }: StepSaludProps) {
             <div
               key={option.id}
               onClick={() => toggleCondition(option.id)}
-              className={`cursor-pointer p-5 border-2 rounded-2xl transition-all duration-200 flex items-center gap-4 ${
+              className={`group cursor-pointer p-5 border-2 rounded-2xl transition-all duration-300 flex items-center gap-5 ${
                 isSelected 
-                  ? "border-primary bg-primary/5" 
-                  : "border-gray-200 hover:border-primary/40 hover:bg-slate-50"
+                  ? "border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-500/10" 
+                  : "border-slate-200 hover:border-emerald-200 hover:bg-slate-50"
               }`}
             >
               {/* Custom Checkbox visual */}
-              <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                isSelected ? "border-primary bg-primary" : "border-gray-300"
+              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                isSelected ? "border-emerald-500 bg-emerald-500 scale-110" : "border-slate-300 group-hover:border-emerald-300"
               }`}>
                 {isSelected && (
                   <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -58,18 +57,18 @@ export function StepSalud({ form }: StepSaludProps) {
               </div>
               
               <div>
-                <h3 className={`font-bold text-lg ${isSelected ? "text-primary" : "text-gray-900"}`}>
+                <h3 className={`font-bold text-base tracking-tight ${isSelected ? "text-emerald-900" : "text-slate-900"}`}>
                   {option.label}
                 </h3>
-                <p className="text-sm text-gray-500">{option.desc}</p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">{option.desc}</p>
               </div>
             </div>
           );
         })}
       </div>
       
-      <p className="text-center text-sm text-gray-400 mt-6">
-        Recuerda: Mascotiq ofrece apoyo nutricional, pero no reemplaza el diagnóstico de un veterinario.
+      <p className="text-center text-[10px] text-slate-400 mt-8 uppercase tracking-widest font-bold">
+        Nota: Mascotiq es preventivo, no reemplaza consulta veterinaria.
       </p>
     </div>
   );
