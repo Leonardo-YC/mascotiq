@@ -46,7 +46,7 @@ export default async function ProductDetailPage({
         <div className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 lg:gap-12 items-start">
 
           {/* ── Columna izquierda: imagen + planes ── */}
-          <div className="w-full md:w-[300px] lg:w-[340px] shrink-0 space-y-5">
+          <div className="w-full md:w-[300px] lg:w-[340px] shrink-0 md:sticky md:top-28 space-y-5">
 
             {product.imageUrl ? (
               <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm">

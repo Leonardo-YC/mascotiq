@@ -2,7 +2,10 @@
 import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Activity, ArrowRight, ChevronDown, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { 
+  Activity, ArrowRight, ChevronDown, Loader2, 
+  AlertTriangle, CheckCircle2, LayoutDashboard 
+} from "lucide-react";
 import { createCheckoutSession } from "@/actions/checkout-action";
 
 interface Pet {
@@ -12,17 +15,16 @@ interface Pet {
   lifeStage: string | null;
   weightKg: string | null;
   activePlanId: number | null;
-  activePlanProductIds: number[];  // productos que ya tiene en su plan activo
+  activePlanProductIds: number[];
 }
 
 interface ValidPlan {
   planId: number;
   stripePriceId: string;
   planName: string;
-  planPrice?: string;  // precio del plan para mostrarlo
+  planPrice?: string;
 }
 
-// Determina el plan esperado según biología
 function getExpectedPlanName(species: string, weightKgStr: string | null, lifeStage: string | null): string | null {
   if (lifeStage !== "senior") return null;
   const w = parseFloat(weightKgStr || "0");
@@ -35,21 +37,19 @@ function getExpectedPlanName(species: string, weightKgStr: string | null, lifeSt
 
 interface CompatResult {
   ok: boolean;
-  alreadyHas?: boolean;  // ya tiene este producto en su plan activo
+  alreadyHas?: boolean;
   message?: string;
 }
 
 function checkCompatibility(pet: Pet, productId: number, validPlans: ValidPlan[]): CompatResult {
-  // 1. ¿La mascota ya tiene este producto en su plan activo?
   if (pet.activePlanProductIds.includes(productId)) {
     return {
       ok: false,
       alreadyHas: true,
-      message: `${pet.name} ya recibe este producto en su plan activo. Para obtenerlo para otra mascota, regístrala con el quiz.`,
+      message: `${pet.name} ya recibe este producto en su plan activo.`,
     };
   }
 
-  // 2. ¿Es senior?
   if (pet.lifeStage !== "senior") {
     return {
       ok: false,
@@ -62,24 +62,22 @@ function checkCompatibility(pet: Pet, productId: number, validPlans: ValidPlan[]
 
   const productPlanNames = validPlans.map(vp => vp.planName);
 
-  // 3. ¿El plan esperado coincide con alguno de los planes del producto?
   if (productPlanNames.includes(expectedPlan)) return { ok: true };
 
-  // 4. No coincide → mensaje específico
   const productIsForCat = productPlanNames.some(p => p.includes("Gato"));
   const productIsForDog = productPlanNames.some(p => p.includes("Perro"));
 
   if (pet.species === "dog" && productIsForCat) {
-    return { ok: false, message: `Este producto es exclusivo para gatos. ${pet.name} (perro) necesita el ${expectedPlan}.` };
+    return { ok: false, message: `Este producto es exclusivo para gatos. ${pet.name} necesita el ${expectedPlan}.` };
   }
   if (pet.species === "cat" && productIsForDog) {
-    return { ok: false, message: `Este producto es exclusivo para perros. ${pet.name} (gato) necesita el ${expectedPlan}.` };
+    return { ok: false, message: `Este producto es exclusivo para perros. ${pet.name} necesita el ${expectedPlan}.` };
   }
 
   const w = parseFloat(pet.weightKg || "0").toFixed(1);
   return {
     ok: false,
-    message: `${pet.name} (${w} kg) corresponde al ${expectedPlan}. Este producto pertenece a otro plan de tamaño.`,
+    message: `${pet.name} (${w} kg) corresponde al ${expectedPlan}. Este producto es para otro tamaño.`,
   };
 }
 
@@ -113,7 +111,6 @@ export function ProductCTA({
       .finally(() => setLoadingPets(false));
   }, [isSignedIn]);
 
-  // Verificar compatibilidad al cambiar mascota
   useEffect(() => {
     setCompatError(null);
     if (!selectedPetId || !validPlans?.length) return;
@@ -131,7 +128,6 @@ export function ProductCTA({
     const compat = checkCompatibility(pet, productId, validPlans);
     if (!compat.ok) { setCompatError(compat); return; }
 
-    // Buscar el stripePriceId del plan que le corresponde a esta mascota
     const expectedPlanName = getExpectedPlanName(pet.species, pet.weightKg, pet.lifeStage);
     const targetPlan = validPlans.find(vp => vp.planName === expectedPlanName) || validPlans[0];
 
@@ -155,7 +151,6 @@ export function ProductCTA({
 
   if (!isLoaded) return <div className="w-full h-12 bg-slate-100 rounded-xl animate-pulse" />;
 
-  // No logueado → siempre mandar a login (quiz ya requiere login)
   if (!isSignedIn) {
     return (
       <Link href="/sign-in"
@@ -189,7 +184,6 @@ export function ProductCTA({
 
   return (
     <div className="space-y-3 pt-1">
-      {/* Selector de mascota */}
       <div>
         <label className="text-xs font-bold text-slate-700 mb-1.5 block">Elige la mascota que recibirá este plan:</label>
         <div className="relative">
@@ -206,18 +200,26 @@ export function ProductCTA({
         </div>
       </div>
 
-      {/* Estado: ya tiene el producto */}
+      {/* ── MEJORA: Botón de escape cuando ya tiene el producto ── */}
       {compatError?.alreadyHas && (
-        <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-200 rounded-xl p-3">
-          <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs text-blue-800 font-bold">Ya tienes este producto</p>
-            <p className="text-xs text-blue-700 mt-0.5 leading-relaxed">{compatError.message}</p>
+        <div className="flex flex-col gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4 shadow-sm animate-in fade-in zoom-in-95">
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[10px] text-blue-900 font-black uppercase tracking-widest">Ya activo en tu plan</p>
+              <p className="text-xs text-blue-700 mt-0.5 leading-relaxed font-medium">{compatError.message}</p>
+            </div>
           </div>
+          <Link 
+            href="/dashboard" 
+            className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 hover:bg-slate-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-slate-900/10 active:scale-[0.98]"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Gestionar mi suscripción actual
+          </Link>
         </div>
       )}
 
-      {/* Estado: incompatibilidad (no es alreadyHas) */}
       {compatError && !compatError.alreadyHas && (
         <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3">
           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
@@ -229,12 +231,11 @@ export function ProductCTA({
         <p className="text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded-xl px-3 py-2">{apiError}</p>
       )}
 
-      {/* Botón checkout — deshabilitado si hay error de compatibilidad */}
       <button onClick={handleCheckout}
         disabled={isRedirecting || !selectedPetId || !!compatError || !validPlans?.length}
         className="w-full flex justify-center items-center gap-2 bg-emerald-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-500 transition-all shadow-md hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
         {isRedirecting ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Preparando tu plan...</>
+          <><Loader2 className="w-4 h-4 animate-spin" /> Preparando...</>
         ) : (
           <><ArrowRight className="w-4 h-4" /> Obtener en mi Plan Mensual</>
         )}

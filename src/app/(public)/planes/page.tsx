@@ -32,7 +32,6 @@ export default async function PlanesPublicPage({
   }));
 
   let userPets: any[] = [];
-  // petActivePlans: { petId, planId } — qué mascota tiene qué plan activo
   let petActivePlans: { petId: number; planId: number }[] = [];
 
   if (userId) {
