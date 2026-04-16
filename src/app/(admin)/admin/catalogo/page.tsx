@@ -14,7 +14,8 @@ export default async function CatalogoManagerPage() {
   const realCategories = categoriesResponse.success && categoriesResponse.data ? categoriesResponse.data : [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 font-sans">
+    // 📱 Responsivo: Reducimos un poco el espaciado vertical en móviles (space-y-6)
+    <div className="space-y-6 md:space-y-10 animate-in fade-in duration-500 font-sans pb-10">
       <CatalogoClient
         initialProducts={realProducts as any}
         categories={realCategories as any}
