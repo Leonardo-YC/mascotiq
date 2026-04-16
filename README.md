@@ -261,7 +261,7 @@ Este proyecto está bajo una **Licencia Propietaria de Código Disponible**. Pue
 
 ## Autor
 
-**Leonardo Yupán Cruz**
+**Leonardo Yupán Crúz**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Leonardo--YC-181717?logo=github)](https://github.com/Leonardo-YC)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Leonardo-0a66c2?logo=linkedin)](https://www.linkedin.com/in/leonardo-yupán-crúz-4b7158336/)
