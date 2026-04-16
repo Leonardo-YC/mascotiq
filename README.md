@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/logo.svg" alt="Mascotiq Logo" width="80" />
+<img src="public/images/logo-email.png" alt="Mascotiq Logo" width="100" />
 
 # Mascotiq
 
