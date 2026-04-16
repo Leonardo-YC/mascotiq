@@ -156,21 +156,7 @@ CRON_SECRET=tu-secreto-para-el-cron
 npx drizzle-kit push
 ```
 
-### 4. Sembrar el catálogo inicial
-
-Una vez el servidor esté corriendo:
-
-```
-GET http://localhost:3000/api/seed
-```
-
-Para borrar y resembrar:
-
-```
-GET http://localhost:3000/api/seed?reset=1
-```
-
-### 5. Configurar webhooks
+### 4. Configurar webhooks
 
 **Stripe** — añade el webhook en el dashboard de Stripe apuntando a:
 ```
@@ -184,7 +170,7 @@ https://tu-dominio.com/api/webhooks/clerk
 ```
 Eventos requeridos: `user.created`
 
-### 6. Iniciar el servidor de desarrollo
+### 5. Iniciar el servidor de desarrollo
 
 ```bash
 npm run dev
