@@ -1,0 +1,132 @@
+Copyright (c) 2026 Leonardo Yupán Crúz
+All Rights Reserved / Todos los derechos reservados
+
+=======================================================================
+ENGLISH: SOURCE-AVAILABLE PROPRIETARY LICENSE
+=======================================================================
+
+1. GRANT OF LICENSE
+
+   You are granted a non-exclusive, non-transferable, and revocable license
+   to access, view, and download the source code of this software
+   ("Mascotiq") solely for personal, educational, and non-commercial
+   purposes. You may run this software on your local machine for your own
+   private use.
+
+2. COMMERCIAL RESTRICTIONS
+
+   You are STRICTLY PROHIBITED from using this software, or any portion of
+   it, for any commercial purpose, monetary gain, or business operations.
+
+   You may NOT:
+   - Host this software as a public service (SaaS) or make it accessible
+     to third parties.
+   - Redistribute, sub-license, or sell copies of this software or any
+     modified version thereof.
+   - Use this code, its architecture, design, or any substantial portion of
+     it to create a competing product or service.
+   - Remove or alter any copyright notices, license files, or attribution
+     present in the software.
+   - Use the name "Mascotiq", its logo, or any associated branding in
+     derivative works or public projects without explicit written permission
+     from the copyright holder.
+
+3. PERMITTED USE
+
+   You MAY:
+   - Study the source code for learning and educational purposes.
+   - Run the software locally on your own machine for private,
+     non-commercial use.
+   - Reference the code in academic or educational projects, provided
+     proper attribution is given to the original author.
+
+4. OWNERSHIP
+
+   All titles, ownership rights, and intellectual property rights in and to
+   the Software — including but not limited to the seniority engine logic,
+   subscription model, UI design, and codebase — shall remain entirely with
+   Leonardo Yupán Cruz. No rights are granted to you other than those
+   expressly set forth in this license.
+
+5. TERMINATION
+
+   This license is automatically terminated if you violate any of its terms.
+   Upon termination, you must cease all use of the software and destroy any
+   copies in your possession.
+
+6. LIMITATION OF LIABILITY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+   DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+   OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR
+   THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=======================================================================
+ESPAÑOL: LICENCIA PROPIETARIA DE CÓDIGO DISPONIBLE
+(Traducción provista únicamente con fines informativos.
+ En caso de conflicto, prevalece la versión en inglés.)
+=======================================================================
+
+1. CONCESIÓN DE LICENCIA
+
+   Se le concede una licencia no exclusiva, intransferible y revocable para
+   acceder, ver y descargar el código fuente de este software ("Mascotiq")
+   única y exclusivamente para fines personales, educativos y no
+   comerciales. Puede ejecutar este software en su máquina local para su
+   propio uso privado.
+
+2. RESTRICCIONES COMERCIALES
+
+   Queda ESTRICTAMENTE PROHIBIDO utilizar este software, o cualquier parte
+   del mismo, para ningún propósito comercial, ganancia monetaria u
+   operaciones de negocio.
+
+   NO puede:
+   - Alojar este software como un servicio público (SaaS) ni hacerlo
+     accesible a terceros.
+   - Redistribuir, sublicenciar ni vender copias de este software o
+     versiones modificadas del mismo.
+   - Utilizar este código, su arquitectura, diseño o cualquier porción
+     sustancial del mismo para crear un producto o servicio competidor.
+   - Eliminar o alterar los avisos de copyright, archivos de licencia o
+     atribuciones presentes en el software.
+   - Utilizar el nombre "Mascotiq", su logotipo ni ninguna marca asociada
+     en obras derivadas o proyectos públicos sin el permiso escrito expreso
+     del titular del copyright.
+
+3. USOS PERMITIDOS
+
+   SÍ puede:
+   - Estudiar el código fuente con fines de aprendizaje y educativos.
+   - Ejecutar el software localmente en su propia máquina para uso
+     privado y no comercial.
+   - Hacer referencia al código en proyectos académicos o educativos,
+     siempre que se otorgue la atribución correspondiente al autor original.
+
+4. PROPIEDAD
+
+   Todos los títulos, derechos de propiedad y derechos de propiedad
+   intelectual sobre el Software — incluyendo, sin limitarse a, la lógica
+   del motor de senioridad, el modelo de suscripción, el diseño de la
+   interfaz y la base de código — seguirán siendo en su totalidad de
+   Leonardo Yupán Cruz. No se le otorga ningún derecho distinto a los
+   expresamente establecidos en esta licencia.
+
+5. TERMINACIÓN
+
+   Esta licencia se rescinde automáticamente si usted incumple cualquiera
+   de sus términos. Ante la rescisión, debe cesar todo uso del software y
+   destruir cualquier copia en su poder.
+
+6. LIMITACIÓN DE RESPONSABILIDAD
+
+   EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO,
+   EXPRESA O IMPLÍCITA, INCLUYENDO, ENTRE OTRAS, LAS GARANTÍAS DE
+   COMERCIABILIDAD, IDONEIDAD PARA UN FIN DETERMINADO Y NO INFRACCIÓN.
+   EN NINGÚN CASO EL AUTOR O TITULAR DEL COPYRIGHT SERÁN RESPONSABLES DE
+   NINGUNA RECLAMACIÓN, DAÑOS U OTRAS RESPONSABILIDADES, YA SEA EN UNA
+   ACCIÓN CONTRACTUAL, EXTRACONTRACTUAL O DE OTRO TIPO, QUE SURJAN DE,
+   FUERA DE, O EN CONEXIÓN CON EL SOFTWARE O SU USO.
