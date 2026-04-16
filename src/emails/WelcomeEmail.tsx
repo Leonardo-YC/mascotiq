@@ -1,4 +1,4 @@
-import { Html, Head, Preview, Body, Container, Text, Button, Tailwind, Section } from '@react-email/components';
+import { Html, Head, Preview, Body, Container, Text, Button, Tailwind, Section, Img } from '@react-email/components';
 import * as React from 'react';
 
 interface WelcomeEmailProps {
@@ -15,7 +15,15 @@ export default function WelcomeEmail({ ownerName = "Amante de las mascotas", pet
         <Body className="bg-slate-50 font-sans">
           <Container className="bg-white border border-gray-100 rounded-2xl p-8 mt-10 mx-auto max-w-lg shadow-sm">
             
-            <Text className="text-2xl font-black text-gray-900 mb-4 tracking-tight">
+            {/* Logo de Mascotiq optimizado para correos */}
+            <Img
+              src="https://mascotiq.vercel.app/images/logo-email.png"
+              alt="Mascotiq Logo"
+              width="160"
+              className="mx-auto mb-8"
+            />
+
+            <Text className="text-2xl font-black text-gray-900 mb-4 tracking-tight text-center">
               ¡Hola, {ownerName}! 👋
             </Text>
             
@@ -23,8 +31,8 @@ export default function WelcomeEmail({ ownerName = "Amante de las mascotas", pet
               Estamos muy felices de que te unas a <strong>Mascotiq</strong>. Nuestra misión es simple pero poderosa: darle a <strong>{petName}</strong> exactamente lo que necesita en su etapa biológica actual. Ni más, ni menos.
             </Text>
 
-            <Section className="bg-emerald-50 rounded-xl p-6 mb-6 text-center">
-              <Text className="text-emerald-800 font-medium m-0">
+            <Section className="bg-emerald-50 rounded-xl p-6 mb-6 text-center border border-emerald-100">
+              <Text className="text-emerald-800 font-bold m-0">
                 Tu viaje hacia una mejor calidad de vida animal acaba de comenzar.
               </Text>
             </Section>
