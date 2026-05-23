@@ -1,8 +1,15 @@
 import "@testing-library/jest-dom";
 
-// ── Mocks globales ────────────────────────────────────────────────────
+// ── Mocks de Variables de Entorno Críticas ────────────────────────────
+// Evita que los imports de la BD y Stripe arrojen throw new Error()
+process.env.DATABASE_URL = "postgres://mock:mock@localhost/mock";
+process.env.STRIPE_SECRET_KEY = "sk_test_mock";
+process.env.STRIPE_WEBHOOK_SECRET = "whsec_mock";
+process.env.GEMINI_API_KEY = "mock_gemini_key";
+process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
 
-// Mock de next/navigation (useRouter, redirect, etc.)
+// ── Mocks globales ────────────────────────────────────────────────────
+// Mock de next/navigation
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -15,13 +22,18 @@ jest.mock("next/navigation", () => ({
   redirect: jest.fn(),
 }));
 
-// Mock de next/headers (headers(), cookies())
+// Mock de next/headers (En Next.js 15 son Asíncronos)
 jest.mock("next/headers", () => ({
-  headers: () => new Map(),
-  cookies: () => ({
+  headers: jest.fn().mockResolvedValue(new Map()),
+  cookies: jest.fn().mockResolvedValue({
     get: jest.fn(),
     set: jest.fn(),
   }),
+}));
+
+// Mock de next/cache (Para que revalidatePath no rompa los tests)
+jest.mock("next/cache", () => ({
+  revalidatePath: jest.fn(),
 }));
 
 // Mock de Clerk para server actions
@@ -63,7 +75,6 @@ jest.mock("@clerk/nextjs", () => ({
 // Silenciar console.error en tests (para errores esperados)
 const originalError = console.error;
 beforeAll(() => {
-  // CORREGIDO: Usamos unknown[] en lugar de any[]
   console.error = (...args: unknown[]) => {
     if (typeof args[0] === "string" && args[0].includes("Warning:")) return;
     originalError(...args);
