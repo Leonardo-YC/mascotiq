@@ -10,13 +10,17 @@ jest.mock("@/lib/db/index", () => {
   // Creamos un builder mock que soporta encadenamiento
   const mockQueryBuilder = {
     where: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockResolvedValue([]),
-    orderBy: jest.fn().mockResolvedValue([]),
+    limit: jest.fn().mockReturnThis(), // CORREGIDO: ahora encadena
+    orderBy: jest.fn().mockReturnThis(), // CORREGIDO: ahora encadena
     leftJoin: jest.fn().mockReturnThis(),
     innerJoin: jest.fn().mockReturnThis(),
-    returning: jest.fn().mockResolvedValue([{ id: 1, name: "Test" }]),
     values: jest.fn().mockReturnThis(),
     set: jest.fn().mockReturnThis(),
+    returning: jest.fn().mockResolvedValue([{ id: 1, name: "Test" }]),
+    // Magia para Drizzle: al agregar "then", convertimos el objeto en un Promise.
+    // Así, cuando haces "await db.select()...", resuelve a un array vacío []
+    // y el .map() de tu código real deja de fallar.
+    then: jest.fn((resolve) => resolve([])),
   };
 
   return {

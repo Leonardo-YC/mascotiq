@@ -1,5 +1,25 @@
 import "@testing-library/jest-dom";
 
+// ── Polyfills para JSDOM ──────────────────────────────────────────────
+// jsdom no incluye las APIs nativas de fetch del navegador/Node moderno.
+// Next.js (next/server) y Stripe las exigen para inicializarse.
+// Apagamos la regla de 'any' de ESLint solo para este bloque porque 
+// solo necesitamos engañar al entorno, no nos importan los tipos reales.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+if (typeof global.Request === "undefined") {
+  global.Request = class Request {} as any;
+}
+if (typeof global.Response === "undefined") {
+  global.Response = class Response {} as any;
+}
+if (typeof global.Headers === "undefined") {
+  global.Headers = class Headers {} as any;
+}
+if (typeof global.fetch === "undefined") {
+  global.fetch = jest.fn() as any;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 // ── Mocks de Variables de Entorno Críticas ────────────────────────────
 // Evita que los imports de la BD y Stripe arrojen throw new Error()
 process.env.DATABASE_URL = "postgres://mock:mock@localhost/mock";
