@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { db } from '../../../../lib/db';
 import { users } from '../../../../lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -41,17 +42,31 @@ export async function POST(req: Request) {
 
   if (eventType === 'user.created') {
     const { id, email_addresses, first_name, last_name } = evt.data;
-    
+
     const email = email_addresses[0]?.email_address;
     const name = `${first_name || ''} ${last_name || ''}`.trim() || 'Usuario Mascotiq';
 
     if (email) {
-      await db.insert(users).values({
-        id: id,
-        email: email,
-        name: name,
-      });
-      console.log(`Usuario sincronizado en Neon: ${email}`);
+      try {
+        // FIX: Verificamos si el usuario ya existe antes de insertar.
+        // processQuizSubmission puede haberlo creado primero si el webhook llega tarde.
+        // Sin este check, el insert falla con unique constraint y Clerk reintenta infinitamente.
+        const existing = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, id))
+          .limit(1);
+
+        if (existing.length === 0) {
+          await db.insert(users).values({ id, email, name });
+          console.log(`Usuario sincronizado en Neon: ${email}`);
+        } else {
+          console.log(`Usuario ya existe en Neon (creado por quiz): ${email}`);
+        }
+      } catch (dbError) {
+        console.error('Error al sincronizar usuario en Neon:', dbError);
+        return new Response('Error al sincronizar usuario', { status: 500 });
+      }
     }
   }
 

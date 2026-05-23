@@ -14,7 +14,6 @@ export async function openCustomerPortal() {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  // 1. Buscar stripeCustomerId en nuestra BD
   const [userData] = await db
     .select()
     .from(users)
@@ -23,7 +22,6 @@ export async function openCustomerPortal() {
 
   let customerId: string | null = userData?.stripeCustomerId || null;
 
-  // 2. Si no está guardado, recuperarlo desde Stripe
   if (!customerId) {
     const userSubs = await db
       .select()
@@ -52,31 +50,20 @@ export async function openCustomerPortal() {
     throw new Error("No se encontró tu cuenta de pagos. Contacta a soporte.");
   }
 
-  // 3. Generar URL del portal
-  // FIX CRÍTICO: redirect() debe ir FUERA del try/catch.
-  // Next.js implementa redirect() lanzando una excepción interna especial.
-  // Si está dentro de un try/catch, esa excepción se captura como error real
-  // y se ejecuta el bloque catch, que lanza otro error encima.
-  // Solución: guardar la URL primero (try/catch solo para errores de Stripe),
-  // luego llamar redirect() fuera de cualquier bloque catch.
   let portalUrl: string;
-
   try {
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${appUrl}/dashboard`,
     });
-
     if (!portalSession.url) {
       throw new Error("Stripe no devolvió una URL válida.");
     }
-
     portalUrl = portalSession.url;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al crear sesión del portal:", error);
     throw new Error("No se pudo abrir el portal de facturación. Intenta de nuevo.");
   }
 
-  // redirect() aquí — fuera del try/catch
   redirect(portalUrl);
 }

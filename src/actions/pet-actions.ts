@@ -4,16 +4,23 @@ import { db } from "@/lib/db/index";
 import { pets, subscriptions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { calculateSeniority } from "@/core/engines/seniority-engine";
+import { calculateSeniority, LifeStage } from "@/core/engines/seniority-engine";
 
-// Eliminar mascota
-// FIX: antes buscamos si tiene suscripciones activas (FK constraint)
+interface PetUpdateFields {
+  name?: string;
+  weightKg?: string;
+  photoUrl?: string | null;
+  breed?: string | null;
+  isMixed?: boolean;
+  birthDate?: Date;
+  lifeStage?: LifeStage;
+}
+
 export async function deletePet(petId: number) {
   try {
     const user = await currentUser();
     if (!user) throw new Error("No autorizado");
 
-    // 1. Verificar si tiene suscripciones ACTIVAS — no se puede eliminar
     const activeSubs = await db
       .select()
       .from(subscriptions)
@@ -28,8 +35,6 @@ export async function deletePet(petId: number) {
       };
     }
 
-    // 2. Si tiene suscripciones canceladas/vencidas, las eliminamos primero
-    //    para liberar el FK constraint
     const allSubs = await db
       .select()
       .from(subscriptions)
@@ -39,20 +44,17 @@ export async function deletePet(petId: number) {
       await db.delete(subscriptions).where(eq(subscriptions.petId, petId));
     }
 
-    // 3. Ahora sí eliminamos la mascota
     await db.delete(pets).where(
       and(eq(pets.id, petId), eq(pets.userId, user.id))
     );
-
     revalidatePath("/dashboard");
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error al eliminar mascota:", error);
     return { success: false, error: "No se pudo eliminar el perfil." };
   }
 }
 
-// Actualizar mascota — ahora soporta foto, raza, híbrida y edad
 export async function updatePet(
   petId: number,
   data: {
@@ -68,33 +70,29 @@ export async function updatePet(
     const user = await currentUser();
     if (!user) throw new Error("No autorizado");
 
-    // Campos base
-    const updateFields: Record<string, any> = {
+    const updateFields: PetUpdateFields = {
       name: data.name,
       weightKg: data.weightKg.toString(),
     };
 
-    // Foto (puede ser "" para borrarla)
     if (data.photoUrl !== undefined) {
       updateFields.photoUrl = data.photoUrl || null;
     }
 
-    // Raza / híbrida
     if (data.breed !== undefined) {
       updateFields.breed = data.breed || null;
     }
+
     if (data.isMixed !== undefined) {
       updateFields.isMixed = data.isMixed;
     }
 
-    // Edad → recalcula birthDate y lifeStage
     if (data.ageYears !== undefined && data.ageYears > 0) {
       const birthDate = new Date();
       birthDate.setFullYear(birthDate.getFullYear() - Math.floor(data.ageYears));
       updateFields.birthDate = birthDate;
     }
 
-    // Recalcular lifeStage siempre que cambie peso o edad
     if (data.ageYears !== undefined || data.weightKg !== undefined) {
       const [currentPet] = await db
         .select()
@@ -110,7 +108,6 @@ export async function updatePet(
             ? data.ageYears
             : (Date.now() - new Date(currentPet.birthDate).getTime()) /
               (1000 * 60 * 60 * 24 * 365.25);
-
         const lifeStage = calculateSeniority({ species, weightKg, ageYears });
         updateFields.lifeStage = lifeStage;
       }
@@ -123,7 +120,7 @@ export async function updatePet(
 
     revalidatePath("/dashboard");
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error al actualizar mascota:", error);
     return { success: false, error: "No se pudo actualizar el perfil." };
   }
