@@ -14,6 +14,8 @@ interface UserData {
   pets: Pet[]; activeSubs: number; totalSubs: number;
 }
 
+type UserRole = "user" | "staff" | "admin";
+
 const PAGE_SIZE = 10;
 
 export function UserManagerClient({
@@ -27,23 +29,17 @@ export function UserManagerClient({
   const [search, setSearch]   = useState("");
   const [filter, setFilter]   = useState<"all" | "active" | "free">("all");
   const [page, setPage]       = useState(1);
-
-  // Modal eliminar
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; userId: string; userName: string }>({
     isOpen: false, userId: "", userName: "",
   });
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Modal cambio de rol
   const [roleModal, setRoleModal] = useState<{
-    isOpen: boolean; userId: string; userName: string; newRole: "user" | "staff" | "admin";
+    isOpen: boolean; userId: string; userName: string; newRole: UserRole;
   }>({ isOpen: false, userId: "", userName: "", newRole: "user" });
   const [isChangingRole, setIsChangingRole] = useState(false);
-
-  // Modal invitar
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole]   = useState<"user" | "staff" | "admin">("user");
+  const [inviteRole, setInviteRole]   = useState<UserRole>("user");
   const [isInviting, setIsInviting]   = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState(false);
@@ -74,7 +70,7 @@ export function UserManagerClient({
     router.refresh();
   };
 
-  const handleRoleChange = (userId: string, userName: string, newRole: "user" | "staff" | "admin") => {
+  const handleRoleChange = (userId: string, userName: string, newRole: UserRole) => {
     setRoleModal({ isOpen: true, userId, userName, newRole });
   };
 
@@ -112,11 +108,8 @@ export function UserManagerClient({
   return (
     <>
       <div className="space-y-4 w-full">
-        {/* FIX: Cabecera con botón Invitar (Responsive Flex Wrap) */}
         <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between w-full">
-          
           <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto flex-1 min-w-0">
-            {/* Buscador */}
             <div className="bg-white flex-1 p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3 min-w-[200px]">
               <Search className="w-5 h-5 text-slate-400 ml-1 shrink-0" />
               <input
@@ -127,8 +120,6 @@ export function UserManagerClient({
                 className="flex-1 bg-transparent border-none focus:outline-none text-slate-700 font-medium placeholder:text-slate-400 text-sm min-w-0 w-full"
               />
             </div>
-            
-            {/* Filtros */}
             <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm overflow-x-auto w-full md:w-auto shrink-0">
               <div className="pl-2 pr-1 hidden min-[400px]:block shrink-0">
                 <Filter className="w-4 h-4 text-slate-400" />
@@ -146,8 +137,6 @@ export function UserManagerClient({
               ))}
             </div>
           </div>
-
-          {/* Botón invitar */}
           {isAdmin && (
             <button
               onClick={() => setInviteModal(true)}
@@ -157,8 +146,6 @@ export function UserManagerClient({
             </button>
           )}
         </div>
-
-        {/* FIX: Tabla (Eliminado max-w-[100vw] y aplicado flex-col para contención correcta) */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 w-full overflow-hidden flex flex-col">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse min-w-[750px]">
@@ -231,7 +218,7 @@ export function UserManagerClient({
                       <td className="p-4">
                         <select
                           value={user.role}
-                          onChange={e => handleRoleChange(user.id, user.name, e.target.value as any)}
+                          onChange={e => handleRoleChange(user.id, user.name, e.target.value as UserRole)}
                           disabled={!isAdmin}
                           className={`text-xs font-bold py-1.5 px-2 rounded-lg border cursor-pointer focus:outline-none transition-colors disabled:cursor-default ${
                             user.role === "admin"
@@ -270,8 +257,6 @@ export function UserManagerClient({
               </tbody>
             </table>
           </div>
-
-          {/* Paginación */}
           {totalPages > 1 && (
             <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-xs text-slate-500 font-medium">
@@ -290,7 +275,6 @@ export function UserManagerClient({
         </div>
       </div>
 
-      {/* Modal eliminar */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in p-4">
           <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl mx-auto text-center">
@@ -314,7 +298,6 @@ export function UserManagerClient({
         </div>
       )}
 
-      {/* Modal cambio de rol */}
       {roleModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in p-4">
           <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl mx-auto text-center">
@@ -335,7 +318,6 @@ export function UserManagerClient({
         </div>
       )}
 
-      {/* Modal invitar usuario */}
       {inviteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in p-4">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl mx-auto overflow-hidden">
@@ -347,7 +329,6 @@ export function UserManagerClient({
                 <X className="w-5 h-5" />
               </button>
             </div>
-
             {inviteSuccess ? (
               <div className="p-8 text-center">
                 <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -373,7 +354,7 @@ export function UserManagerClient({
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Rol asignado</label>
                   <select
                     value={inviteRole}
-                    onChange={e => setInviteRole(e.target.value as any)}
+                    onChange={e => setInviteRole(e.target.value as UserRole)}
                     className="w-full mt-1 border-b-2 border-slate-200 py-2 focus:border-emerald-500 focus:outline-none text-slate-700 bg-transparent text-sm"
                   >
                     <option value="user">Cliente</option>

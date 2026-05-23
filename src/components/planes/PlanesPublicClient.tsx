@@ -15,6 +15,14 @@ interface Pet {
   weightKg: string | null;
 }
 
+interface PlanProduct {
+  id: number;
+  name: string;
+  description: string;
+  subscriptionPrice: string;
+  imageUrl: string | null;
+}
+
 interface Plan {
   id: number;
   name: string;
@@ -23,13 +31,14 @@ interface Plan {
   stripePriceId: string;
   interval: string;
   isActive: boolean;
-  products: {
-    id: number;
-    name: string;
-    description: string;
-    subscriptionPrice: string;
-    imageUrl: string | null;
-  }[];
+  products: PlanProduct[];
+}
+
+interface CheckoutState {
+  selectedPetId: number | null;
+  isLoading: boolean;
+  error: string | null;
+  warned: boolean;
 }
 
 function getExpectedPlanName(species: string, weightKg: string | null, lifeStage: string | null): string | null {
@@ -57,10 +66,8 @@ export function PlanesPublicClient({
   isLoggedIn: boolean;
   recommendedPlanName: string | null;
 }) {
-  const [checkoutStates, setCheckoutStates] = useState<
-    Record<number, { selectedPetId: number | null; isLoading: boolean; error: string | null; warned: boolean }>
-  >(() => {
-    const initial: Record<number, any> = {};
+  const [checkoutStates, setCheckoutStates] = useState<Record<number, CheckoutState>>(() => {
+    const initial: Record<number, CheckoutState> = {};
     plans.forEach(p => {
       initial[p.id] = { selectedPetId: null, isLoading: false, error: null, warned: false };
     });
@@ -69,7 +76,7 @@ export function PlanesPublicClient({
 
   useEffect(() => {
     if (!userPets.length) return;
-    const updates: Record<number, any> = {};
+    const updates: Record<number, Partial<CheckoutState>> = {};
     plans.forEach(plan => {
       const eligiblePets = userPets.filter(pet =>
         !petActivePlans.find(pa => pa.petId === pet.id && pa.planId === plan.id)
@@ -83,7 +90,7 @@ export function PlanesPublicClient({
       };
     });
     setCheckoutStates(prev => {
-      const merged: Record<number, any> = { ...prev };
+      const merged: Record<number, CheckoutState> = { ...prev };
       Object.keys(updates).forEach(k => {
         const planId = parseInt(k);
         merged[planId] = { ...prev[planId], ...updates[planId] };
@@ -99,7 +106,7 @@ export function PlanesPublicClient({
     }
   }, [recommendedPlanName]);
 
-  const updateState = (planId: number, updates: Partial<typeof checkoutStates[0]>) => {
+  const updateState = (planId: number, updates: Partial<CheckoutState>) => {
     setCheckoutStates(prev => ({ ...prev, [planId]: { ...prev[planId], ...updates } }));
   };
 
@@ -108,14 +115,11 @@ export function PlanesPublicClient({
     if (!state.selectedPetId) return;
     const pet = userPets.find(p => p.id === state.selectedPetId);
     if (!pet) return;
-
     const expectedPlan = getExpectedPlanName(pet.species, pet.weightKg, pet.lifeStage);
-
     if (pet.lifeStage !== "senior") {
       updateState(plan.id, { error: `${pet.name} aún no es senior. El sistema te avisará cuando sea el momento.` });
       return;
     }
-
     if (expectedPlan && expectedPlan !== plan.name && !state.warned) {
       updateState(plan.id, {
         error: `⚠️ Diagnóstico: ${pet.name} corresponde al ${expectedPlan}. ¿Deseas continuar con este plan igualmente?`,
@@ -123,12 +127,12 @@ export function PlanesPublicClient({
       });
       return;
     }
-
     updateState(plan.id, { isLoading: true, error: null });
     try {
       await createCheckoutSession(state.selectedPetId, plan.stripePriceId);
-    } catch (err: any) {
-      if (!err?.message?.includes("NEXT_REDIRECT")) {
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      if (!error?.message?.includes("NEXT_REDIRECT")) {
         updateState(plan.id, { isLoading: false, error: "Error al iniciar pago. Reintenta." });
       }
     }
@@ -136,7 +140,6 @@ export function PlanesPublicClient({
 
   return (
     <main className="min-h-screen bg-slate-50 font-sans pb-20">
-      {/* Cabecera Optimizada */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest mb-6 border border-emerald-100">
@@ -146,7 +149,6 @@ export function PlanesPublicClient({
           <p className="text-base md:text-lg text-slate-500 max-w-xl mx-auto leading-relaxed font-medium">
             Fórmulas biológicas automáticas. Recibe una caja personalizada cada mes, diseñada para la etapa real de tu mascota.
           </p>
-          
           {recommendedPlanName && (
             <div className="mt-8 inline-flex items-center gap-3 bg-slate-900 px-6 py-3 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2">
               <Star className="w-4 h-4 text-emerald-400 fill-emerald-400" />
@@ -157,8 +159,6 @@ export function PlanesPublicClient({
           )}
         </div>
       </div>
-
-      {/* Advisory Banner Simplificado */}
       <div className="max-w-5xl mx-auto px-6 pt-8">
         <div className="bg-emerald-600 rounded-3xl p-6 md:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-emerald-600/20 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
@@ -176,8 +176,6 @@ export function PlanesPublicClient({
           </Link>
         </div>
       </div>
-
-      {/* Grid de planes */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map(plan => {
@@ -197,13 +195,11 @@ export function PlanesPublicClient({
                     ? "border-emerald-500 shadow-2xl scale-[1.02] z-20"
                     : "border-slate-100 hover:border-emerald-200"
                 }`}>
-
                 {isRecommended && (
                   <div className="bg-emerald-500 text-white text-[10px] font-black text-center py-2 tracking-[0.2em] uppercase">
                     ⭐ Selección Inteligente
                   </div>
                 )}
-
                 <div className="p-8 md:p-10 flex flex-col h-full">
                   <div className="mb-6">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -212,7 +208,6 @@ export function PlanesPublicClient({
                     <h3 className="text-2xl font-black text-slate-900 mt-2 mb-2 leading-tight">{plan.name}</h3>
                     <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-2">{plan.description}</p>
                   </div>
-
                   <div className="mb-8">
                     {isZero ? (
                       <p className="text-xl font-black text-amber-500 uppercase tracking-widest">Coming Soon</p>
@@ -224,13 +219,12 @@ export function PlanesPublicClient({
                       </div>
                     )}
                   </div>
-
                   <div className="flex-1 mb-8">
                     <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-5 border-b border-slate-100 pb-2">
                       Fórmulas Incluidas:
                     </p>
                     <ul className="space-y-3">
-                      {plan.products.map((p: any) => (
+                      {plan.products.map((p) => (
                         <li key={p.id} className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
                             {p.imageUrl ? (
@@ -244,8 +238,6 @@ export function PlanesPublicClient({
                       ))}
                     </ul>
                   </div>
-
-                  {/* Interfaz de Suscripción */}
                   <div className="mt-auto space-y-3">
                     {state?.error && (
                       <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -260,7 +252,6 @@ export function PlanesPublicClient({
                         </div>
                       </div>
                     )}
-
                     {!isLoggedIn ? (
                       <Link href="/sign-in" className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10">
                         <LogIn className="w-4 h-4" /> Entrar para suscribirme

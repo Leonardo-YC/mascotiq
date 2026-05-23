@@ -17,20 +17,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Definimos la base URL desde el .env o usamos la de producción por defecto
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mascotiq.vercel.app";
 
 export const metadata: Metadata = {
-  // FIX: Esto elimina el warning de consola y ayuda a resolver las imágenes OG
   metadataBase: new URL(baseUrl),
-  
   title: {
     default: "Mascotiq | Nutrición Inteligente para tu Mascota",
     template: "%s | Mascotiq"
   },
   description: "Suscripciones nutricionales inteligentes basadas en la etapa biológica real de tu mascota. Descubre exactamente qué necesita hoy.",
   keywords: ["nutrición para mascotas", "comida para perros", "suplementos para gatos", "mascotas senior", "suscripción mascotas", "bienestar animal"],
-  
   openGraph: {
     title: "Mascotiq | Bienestar Animal",
     description: "Descubre exactamente qué necesita tu mascota según su especie, raza, peso y edad real.",
@@ -38,7 +34,7 @@ export const metadata: Metadata = {
     siteName: "Mascotiq",
     images: [
       {
-        url: "/og-image.jpg", // Asegúrate de que este archivo esté en la carpeta /public
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Mascotiq - Diagnóstico Nutricional Gratuito",
@@ -61,8 +57,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider 
-      localization={esES as any}
+    <ClerkProvider
+      localization={esES}
       appearance={{
         variables: {
           colorPrimary: 'hsl(158, 64%, 39%)',
@@ -79,12 +75,9 @@ export default function RootLayout({
     >
       <html lang="es" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
-          
           {children}
-
           <ChatbotIA />
           <Analytics />
-          
         </body>
       </html>
     </ClerkProvider>

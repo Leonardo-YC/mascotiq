@@ -14,7 +14,71 @@ import { ImageUpload } from "@/components/quiz/ImageUpload";
 import { ErrorModal } from "@/components/dashboard/modals/ErrorModal";
 import { DeletePetModal } from "@/components/dashboard/modals/DeletePetModal";
 
-function calcAge(birthDate: any): number {
+interface PetData {
+  id: number;
+  userId: string;
+  name: string;
+  species: string;
+  breed: string | null;
+  isMixed: boolean;
+  birthDate: Date;
+  weightKg: string;
+  lifeStage: string | null;
+  photoUrl: string | null;
+  createdAt: Date;
+}
+
+interface ProductData {
+  id: number;
+  categoryId: number | null;
+  name: string;
+  description: string;
+  ingredients: string | null;
+  price: string;
+  subscriptionPrice: string;
+  imageUrl: string | null;
+  isActive: boolean;
+}
+
+interface OrderData {
+  id: number;
+  subscriptionId: number;
+  status: string;
+  trackingNumber: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface SubRecord {
+  id: number;
+  userId: string;
+  petId: number;
+  planId: number;
+  stripeSubscriptionId: string;
+  status: string;
+  currentPeriodEnd: Date;
+  createdAt: Date;
+}
+
+interface PlanRecord {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string;
+  stripePriceId: string;
+  stripeProductId: string | null;
+  interval: string;
+  isActive: boolean;
+}
+
+interface SubData {
+  subscription: SubRecord;
+  plan: PlanRecord | null;
+  products: ProductData[];
+  orders: OrderData[];
+}
+
+function calcAge(birthDate: Date | string | null): number {
   if (!birthDate) return 0;
   return Math.floor((Date.now() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
 }
@@ -22,7 +86,7 @@ function calcAge(birthDate: any): number {
 const SUBS_PER_PAGE  = 2;
 const PETS_PER_PAGE  = 6;
 
-export function DashboardClient({ initialPets, initialSubs }: { initialPets: any[]; initialSubs: any[]; }) {
+export function DashboardClient({ initialPets, initialSubs }: { initialPets: PetData[]; initialSubs: SubData[]; }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -42,7 +106,7 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
     catch { setErrorModal({ isOpen: true, message: "Error al conectar con la pasarela de pagos." }); setIsRedirecting(false); }
   };
 
-  const openEdit = (pet: any) => {
+  const openEdit = (pet: PetData) => {
     setEditData({ name: pet.name, weightKg: pet.weightKg || "", breed: pet.breed || "", isMixed: pet.isMixed || false, ageYears: calcAge(pet.birthDate).toString(), photoUrl: pet.photoUrl || "" });
     setEditingPetId(pet.id);
   };
@@ -55,7 +119,7 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
     else setErrorModal({ isOpen: true, message: result.error || "Error al guardar." });
   };
 
-  const requestDelete = (pet: any) => {
+  const requestDelete = (pet: PetData) => {
     const hasActiveSub = initialSubs.some(s => s.subscription?.petId === pet.id && s.subscription?.status === "active");
     setDeleteModal({ isOpen: true, petId: pet.id, petName: pet.name, hasActiveSub });
   };
@@ -68,7 +132,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
     else router.refresh();
   };
 
-  // Badges actualizados al estilo Boutique
   const stageBadge: Record<string, { label: string; cls: string }> = {
     senior: { label: "Senior", cls: "bg-amber-100 text-amber-800 border-amber-200" },
     adult:  { label: "Adulto", cls: "bg-blue-100 text-blue-800 border-blue-200" },
@@ -77,7 +140,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
 
   const totalSubsPages = Math.max(1, Math.ceil(initialSubs.length / SUBS_PER_PAGE));
   const paginatedSubs  = initialSubs.slice((subsPage - 1) * SUBS_PER_PAGE, subsPage * SUBS_PER_PAGE);
-
   const totalPetsPages = Math.max(1, Math.ceil(initialPets.length / PETS_PER_PAGE));
   const paginatedPets  = initialPets.slice((petsPage - 1) * PETS_PER_PAGE, petsPage * PETS_PER_PAGE);
 
@@ -100,7 +162,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
   return (
     <>
       <div className="space-y-12 animate-in fade-in duration-500">
-
         {/* ── Planes Activos ── */}
         <section>
           <div className="flex justify-between items-center mb-6">
@@ -111,7 +172,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
               </Link>
             )}
           </div>
-
           {initialSubs.length === 0 ? (
             <div className="bg-white p-10 md:p-14 rounded-[2.5rem] border-2 border-dashed border-slate-200 text-center">
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-slate-100">
@@ -137,7 +197,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                   const currentOrder = subData.orders[0];
                   return (
                     <div key={index} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
-                      {/* Header de la Tarjeta */}
                       <div className="bg-slate-900 p-6 text-white relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 blur-2xl rounded-full -mr-10 -mt-10" />
                         <div className="relative z-10 flex items-start justify-between gap-4">
@@ -156,8 +215,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                           </div>
                         </div>
                       </div>
-
-                      {/* Contenido de la Tarjeta */}
                       <div className="p-6 flex flex-col gap-6 flex-1">
                         {currentOrder && (
                           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center gap-4">
@@ -170,12 +227,11 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                             </div>
                           </div>
                         )}
-
                         {subData.products.length > 0 && (
                           <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Fórmulas incluidas</p>
                             <div className="flex flex-wrap gap-2">
-                              {subData.products.map((p: any) => (
+                              {subData.products.map((p) => (
                                 <div key={p.id} className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl pr-3 pl-1 py-1">
                                   {p.imageUrl ? (
                                     <img src={p.imageUrl} alt={p.name} className="w-6 h-6 rounded-lg object-cover" />
@@ -190,7 +246,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                             </div>
                           </div>
                         )}
-
                         <div className="mt-auto pt-4 border-t border-slate-100">
                           <button onClick={handleOpenPortal} disabled={isRedirecting}
                             className="w-full flex items-center justify-center gap-2 bg-white border-2 border-slate-200 text-slate-700 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:border-slate-300 hover:bg-slate-50 transition-all disabled:opacity-50 active:scale-95">
@@ -216,7 +271,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
               <Plus className="w-3 h-3" /> Añadir Perfil
             </Link>
           </div>
-
           {initialPets.length === 0 ? (
             <div className="bg-white p-10 md:p-14 rounded-[2.5rem] border border-slate-100 shadow-sm text-center">
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-slate-100">
@@ -236,11 +290,9 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                 {paginatedPets.map(pet => {
                   const badge = stageBadge[pet.lifeStage ?? "adult"] ?? stageBadge.adult;
                   const ageYears = calcAge(pet.birthDate);
-
                   return (
                     <div key={pet.id} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-all">
                       {editingPetId === pet.id ? (
-                        /* Modo Edición Boutique */
                         <div className="p-6 flex flex-col gap-4 flex-1 bg-slate-50/50">
                           <div className="flex justify-between items-center mb-2">
                             <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">Editar Perfil</h4>
@@ -248,9 +300,7 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                               <X className="w-4 h-4" />
                             </button>
                           </div>
-                          
                           <ImageUpload value={editData.photoUrl} onChange={url => setEditData(p => ({ ...p, photoUrl: url }))} />
-                          
                           <div className="space-y-3 mt-2">
                             <div>
                               <label className="text-[10px] text-slate-400 font-black uppercase tracking-widest ml-1">Nombre</label>
@@ -271,7 +321,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                               <span className="text-xs font-bold text-slate-700">Mascota Híbrida/Cruzada</span>
                             </label>
                           </div>
-
                           <div className="mt-auto pt-4">
                             <button type="button" onClick={() => handleSave(pet.id)} disabled={isSaving} className="w-full bg-emerald-600 text-white py-3.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-emerald-600/20">
                               <Save className="w-4 h-4" /> {isSaving ? "Guardando..." : "Guardar Cambios"}
@@ -279,7 +328,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                           </div>
                         </div>
                       ) : (
-                        /* Modo Vista */
                         <>
                           <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden group">
                             {pet.photoUrl ? (
@@ -295,10 +343,8 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                               </span>
                             </div>
                           </div>
-
                           <div className="p-6 flex flex-col flex-1">
                             <h3 className="text-xl font-black text-slate-900 mb-4 tracking-tight truncate">{pet.name}</h3>
-                            
                             <div className="grid grid-cols-2 gap-y-3 gap-x-2 mb-6 flex-1">
                               <div>
                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Peso</p>
@@ -315,7 +361,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
                                 </p>
                               </div>
                             </div>
-                            
                             <div className="flex gap-2 mt-auto">
                               <button onClick={() => openEdit(pet)} className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors text-xs">
                                 <Settings className="w-3.5 h-3.5" /> Editar
@@ -336,7 +381,6 @@ export function DashboardClient({ initialPets, initialSubs }: { initialPets: any
           )}
         </section>
       </div>
-
       {mounted && deleteModal.isOpen && (
         <DeletePetModal petName={deleteModal.petName} hasActiveSub={deleteModal.hasActiveSub} onConfirm={confirmDelete} onClose={() => setDeleteModal({ isOpen: false, petId: null, petName: "", hasActiveSub: false })} />
       )}

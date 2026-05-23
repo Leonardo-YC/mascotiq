@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { updatePlanPrice } from "@/actions/plan-actions";
 
-// Utilidad para asegurar que el modal cubra toda la pantalla
 function Portal({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -13,44 +12,70 @@ function Portal({ children }: { children: React.ReactNode }) {
   return createPortal(children, document.body);
 }
 
+export interface AdminPlan {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string;
+  stripePriceId: string;
+  stripeProductId: string | null;
+  interval: string;
+  isActive: boolean;
+}
+
+export interface AdminProduct {
+  id: number;
+  name: string;
+  description: string;
+  ingredients: string | null;
+  price: string;
+  subscriptionPrice: string;
+  imageUrl: string | null;
+  isActive: boolean;
+  categoryId: number | null;
+}
+
+export interface AdminPlanProduct {
+  id: number;
+  planId: number;
+  productId: number;
+}
+
 export function PlanManagerClient({
   initialPlans,
   availableProducts,
   currentRelations,
 }: {
-  initialPlans: any[];
-  availableProducts: any[];
-  currentRelations: any[];
+  initialPlans: AdminPlan[];
+  availableProducts: AdminProduct[];
+  currentRelations: AdminPlanProduct[];
 }) {
   const router = useRouter();
   const plans = initialPlans;
-
-  const [modalState, setModalState] = useState<{ isOpen: boolean; plan: any }>({
+  const [modalState, setModalState] = useState<{ isOpen: boolean; plan: AdminPlan | null }>({
     isOpen: false,
     plan: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successBanner, setSuccessBanner] = useState(false);
 
-  // Bloquear scroll cuando el modal está abierto
   useEffect(() => {
     if (modalState.isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [modalState.isOpen]);
 
-  const openModal = (plan: any) => setModalState({ isOpen: true, plan });
+  const openModal = (plan: AdminPlan) => setModalState({ isOpen: true, plan });
   const closeModal = () => setModalState({ isOpen: false, plan: null });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!modalState.plan) return;
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     const newPrice = parseFloat(formData.get("price") as string);
     const interval = formData.get("interval") as "monthly" | "bimonthly";
-
     await updatePlanPrice(modalState.plan.id, modalState.plan.name, newPrice, interval);
-
     setIsSubmitting(false);
     closeModal();
     setSuccessBanner(true);
@@ -66,14 +91,12 @@ export function PlanManagerClient({
           Plan actualizado y sincronizado con Stripe correctamente.
         </div>
       )}
-
-      {/* 📱 Responsivo: gap adaptado para móvil */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
-        {plans.map((plan: any) => {
+        {plans.map((plan) => {
           const planProductsList = currentRelations
-            .filter((r: any) => r.planId === plan.id)
-            .map((r: any) => availableProducts.find((p: any) => p.id === r.productId))
-            .filter(Boolean);
+            .filter((r) => r.planId === plan.id)
+            .map((r) => availableProducts.find((p) => p.id === r.productId))
+            .filter((p): p is AdminProduct => p !== undefined);
 
           const isPriceZero = parseFloat(plan.price) === 0;
 
@@ -94,18 +117,14 @@ export function PlanManagerClient({
                   )}
                 </div>
               </div>
-
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1 tracking-tight leading-tight">{plan.name}</h3>
-              
               <p className={`text-3xl sm:text-4xl font-black mb-3 tracking-tighter ${isPriceZero ? "text-amber-500" : "text-emerald-600"}`}>
                 {isPriceZero ? "N/A" : `S/ ${plan.price}`}
                 {!isPriceZero && <span className="text-xs sm:text-sm text-slate-400 font-bold ml-1 tracking-normal">/mes</span>}
               </p>
-              
               {plan.description && (
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mb-5 md:mb-6 leading-relaxed line-clamp-2">{plan.description}</p>
               )}
-
               <div className="flex-1 mb-6 md:mb-8">
                 <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
                   <Package className="w-3.5 h-3.5" /> Incluye ({planProductsList.length})
@@ -116,7 +135,7 @@ export function PlanManagerClient({
                   </div>
                 ) : (
                   <ul className="space-y-2 md:space-y-2.5">
-                    {planProductsList.map((p: any) => (
+                    {planProductsList.map((p) => (
                       <li key={p.id} className="flex items-center gap-2.5 sm:gap-3 text-[11px] sm:text-xs text-slate-700 font-bold bg-slate-50 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl border border-slate-100">
                         {p.imageUrl ? (
                           <img src={p.imageUrl} alt={p.name} className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg object-cover shrink-0 shadow-sm" />
@@ -131,7 +150,6 @@ export function PlanManagerClient({
                   </ul>
                 )}
               </div>
-
               <button
                 onClick={() => openModal(plan)}
                 className="w-full py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-900 text-slate-700 hover:text-white font-black text-[10px] sm:text-xs uppercase tracking-widest rounded-2xl transition-colors border border-slate-200 hover:border-slate-900 flex items-center justify-center gap-2"
@@ -144,8 +162,7 @@ export function PlanManagerClient({
         })}
       </div>
 
-      {/* Modal de Precio con Portal y Simetría Arreglada */}
-      {modalState.isOpen && (
+      {modalState.isOpen && modalState.plan && (
         <Portal>
           <div
             className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
@@ -171,10 +188,7 @@ export function PlanManagerClient({
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
               <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-5 md:space-y-6">
-                
-                {/* 📱 Responsivo: flex-col en móviles, sm:flex-row para alinearlos lado a lado */}
                 <div className="flex flex-col sm:flex-row gap-4 bg-slate-50 p-4 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100">
                   <div className="flex-1 flex flex-col justify-end">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
@@ -191,7 +205,6 @@ export function PlanManagerClient({
                       className="h-12 w-full mt-1 md:mt-2 border-b-2 border-slate-200 px-2 focus:border-emerald-500 focus:outline-none font-black text-lg md:text-xl text-slate-900 bg-transparent transition-colors"
                     />
                   </div>
-                  
                   <div className="flex-1 flex flex-col justify-end">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
                       Frecuencia
@@ -209,13 +222,11 @@ export function PlanManagerClient({
                     </div>
                   </div>
                 </div>
-
                 <div className="text-center bg-slate-50 border border-slate-100 p-3 rounded-xl">
                   <p className="text-[9px] md:text-[10px] font-bold text-slate-500 tracking-wider">
                     Asigna productos desde el <strong className="text-slate-700 uppercase">Catálogo</strong>.
                   </p>
                 </div>
-
                 <button
                   type="submit"
                   disabled={isSubmitting}

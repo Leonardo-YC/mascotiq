@@ -1,10 +1,9 @@
 import { db } from "@/lib/db/index";
 import { plans, products, planProducts } from "@/lib/db/schema";
 import { Layers, Zap } from "lucide-react";
-import { PlanManagerClient } from "@/components/admin/PlanManagerClient";
+import { PlanManagerClient, type AdminPlan, type AdminProduct, type AdminPlanProduct } from "@/components/admin/PlanManagerClient";
 
 export default async function PlanesManagerPage() {
-  // 1. Extraemos toda la data necesaria en paralelo para mayor velocidad
   const [allPlans, allProducts, allPlanProducts] = await Promise.all([
     db.select().from(plans).orderBy(plans.id),
     db.select().from(products).orderBy(products.name),
@@ -12,10 +11,7 @@ export default async function PlanesManagerPage() {
   ]);
 
   return (
-    // 📱 Responsivo: space-y ajustado para móvil
     <div className="space-y-6 md:space-y-10 animate-in fade-in duration-500 font-sans pb-8 md:pb-10">
-      
-      {/* 🚀 Cabecera */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1 md:px-0">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-widest mb-3 border border-slate-200">
@@ -27,8 +23,6 @@ export default async function PlanesManagerPage() {
           </p>
         </div>
       </div>
-
-      {/* 💡 Banner Informativo */}
       <div className="bg-blue-50 border border-blue-100 p-5 sm:p-6 rounded-2xl md:rounded-[2rem] flex items-start sm:items-center gap-4 sm:gap-5 shadow-sm">
         <div className="bg-blue-600 p-3 rounded-xl sm:rounded-2xl shrink-0 text-white">
           <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -40,14 +34,11 @@ export default async function PlanesManagerPage() {
           </p>
         </div>
       </div>
-
-      {/* 🧩 Componente Interactivo (Client Component) */}
-      <PlanManagerClient 
-        initialPlans={allPlans} 
-        availableProducts={allProducts} 
-        currentRelations={allPlanProducts} 
+      <PlanManagerClient
+        initialPlans={allPlans as AdminPlan[]}
+        availableProducts={allProducts as AdminProduct[]}
+        currentRelations={allPlanProducts as AdminPlanProduct[]}
       />
-
     </div>
   );
 }

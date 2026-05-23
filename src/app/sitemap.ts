@@ -2,6 +2,14 @@ import { MetadataRoute } from "next";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mascotiq.vercel.app";
 
+type ChangeFrequency = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
+
+function getChangeFrequency(route: string): ChangeFrequency {
+  if (route === "/catalogo") return "weekly";
+  if (route === "/quiz") return "monthly";
+  return "yearly";
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
@@ -15,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: (route === "/catalogo" ? "weekly" : route === "/quiz" ? "monthly" : "yearly") as any,
+    changeFrequency: getChangeFrequency(route),
     priority: route === "" ? 1 : route === "/quiz" ? 0.9 : 0.7,
   }));
 
