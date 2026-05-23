@@ -1,24 +1,17 @@
 import type { Config } from "jest";
 import nextJest from "next/jest.js";
 
-const createJestConfig = nextJest({
-  // Apunta al directorio raíz de tu app Next.js
-  dir: "./",
-});
+const createJestConfig = nextJest({ dir: "./" });
 
 const config: Config = {
   coverageProvider: "v8",
   testEnvironment: "jsdom",
-
-  // Orden en que se ejecutan los archivos de setup (CORREGIDO)
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 
-  // Aliases de @/ que usa el proyecto
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
 
-  // Dónde buscar tests
   testMatch: [
     "<rootDir>/src/**/__tests__/**/*.test.ts",
     "<rootDir>/src/**/__tests__/**/*.test.tsx",
@@ -27,23 +20,24 @@ const config: Config = {
     "<rootDir>/tests/integration/**/*.test.ts",
   ],
 
-  // Ignorar
   testPathIgnorePatterns: [
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
-    "<rootDir>/tests/e2e/",     // Playwright se encarga de estos
-    "<rootDir>/tests/load/",    // k6 se encarga de estos
+    "<rootDir>/tests/e2e/",
+    // K6 eliminado — borrar la carpeta tests/load/ manualmente
   ],
 
-  // Reporte de cobertura
+  // Permite que Jest procese paquetes ESM como lucide-react y uploadthing
+  transformIgnorePatterns: [
+    "/node_modules/(?!(lucide-react|@uploadthing|uploadthing)/)",
+  ],
+
   collectCoverageFrom: [
     "src/core/**/*.ts",
     "src/actions/**/*.ts",
-    "src/components/**/*.tsx",
     "!src/**/*.d.ts",
   ],
 
-  // Umbrales mínimos de cobertura (ajusta según avance el proyecto)
   coverageThreshold: {
     global: {
       branches: 60,

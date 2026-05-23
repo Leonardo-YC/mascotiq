@@ -15,14 +15,19 @@ function Portal({ children }: { children: React.ReactNode }) {
   return createPortal(children, document.body);
 }
 
-interface Plan  { id: number; name: string }
-interface Cat   { id: number; name: string }
-interface Prod  {
+export interface CatalogoPlan  { id: number; name: string }
+export interface CatalogoCategory   { id: number; name: string }
+export interface CatalogoProduct  {
   id: number; name: string; description: string; ingredients: string | null;
   price: string; subscriptionPrice: string; imageUrl: string | null;
   categoryName: string | null; categoryId: number | null;
   isActive: boolean; planIds: number[]; planNames: string[];
 }
+
+// Alias internos para mantener el código existente
+type Plan = CatalogoPlan;
+type Cat = CatalogoCategory;
+type Prod = CatalogoProduct;
 
 export function CatalogoClient({
   initialProducts,
@@ -37,11 +42,9 @@ export function CatalogoClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrl, setImageUrl]       = useState("");
   const [selectedPlanIds, setSelectedPlanIds] = useState<number[]>([]);
-
   const [modalState, setModalState] = useState<{
     isOpen: boolean; mode: "create" | "edit"; product: Prod | null;
   }>({ isOpen: false, mode: "create", product: null });
-
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean; id: number | null; name: string;
   }>({ isOpen: false, id: null, name: "" });
@@ -68,6 +71,7 @@ export function CatalogoClient({
     setImageUrl(product?.imageUrl || "");
     setSelectedPlanIds(product?.planIds || []);
   };
+
   const closeModal = () => {
     setModalState({ isOpen: false, mode: "create", product: null });
     setImageUrl("");
@@ -90,7 +94,6 @@ export function CatalogoClient({
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     formData.set("imageUrl", imageUrl);
-
     if (modalState.mode === "create") {
       await createProduct(formData, selectedPlanIds);
     } else if (modalState.product) {
@@ -110,7 +113,6 @@ export function CatalogoClient({
 
   return (
     <>
-      {/* Cabecera */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900">Catálogo de Productos</h1>
@@ -118,7 +120,6 @@ export function CatalogoClient({
             Gestiona los suplementos y asigna cada uno a sus planes correspondientes.
           </p>
         </div>
-        {/* 📱 Responsivo: w-full en móvil, w-auto en tablet/PC */}
         <button
           onClick={() => openModal("create")}
           className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors shadow-sm text-sm shrink-0"
@@ -127,7 +128,6 @@ export function CatalogoClient({
         </button>
       </div>
 
-      {/* Buscador */}
       <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
         <Search className="w-5 h-5 text-slate-400 ml-2 shrink-0" />
         <input
@@ -137,14 +137,11 @@ export function CatalogoClient({
           placeholder="Buscar por nombre o categoría..."
           className="flex-1 bg-transparent border-none focus:outline-none text-slate-700 font-medium placeholder:text-slate-400 text-sm min-w-0"
         />
-        {/* 📱 Responsivo: Ocultamos el contador en pantallas extra pequeñas (<400px) para no apretar el buscador */}
         <span className="text-xs text-slate-400 font-medium mr-2 shrink-0 hidden min-[400px]:inline-block whitespace-nowrap">
           {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      {/* Tabla */}
-      {/* 📱 Responsivo: overflow-x-auto, márgenes negativos para que llegue al borde en móvil y min-w-[750px] para evitar aplastamiento */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full max-w-[100vw]">
         <div className="overflow-x-auto w-full -mx-4 px-4 sm:mx-0 sm:px-0">
           <table className="w-full text-left border-collapse min-w-[750px]">
@@ -169,7 +166,6 @@ export function CatalogoClient({
                         <Package className="w-5 h-5 text-slate-400" />
                       </div>
                     )}
-                    {/* 📱 Responsivo: line-clamp para que nombres muy largos no rompan la fila */}
                     <span className="font-bold text-slate-900 text-sm line-clamp-2">{product.name}</span>
                   </td>
                   <td className="p-4 whitespace-nowrap">
@@ -237,7 +233,6 @@ export function CatalogoClient({
         </div>
       </div>
 
-      {/* ── MODAL CREAR / EDITAR ── */}
       {modalState.isOpen && (
         <Portal>
           <div
@@ -250,7 +245,6 @@ export function CatalogoClient({
               className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
               onClick={e => e.stopPropagation()}
             >
-              {/* Header */}
               <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <Package className="w-5 h-5 text-emerald-600" />
@@ -260,19 +254,12 @@ export function CatalogoClient({
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
-              {/* Body: formulario izquierda + imagen derecha */}
               <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden min-h-0">
-
-                {/* Formulario */}
-                {/* 📱 Responsivo: w-full en móvil, overflow-y-auto habilitado en móvil también */}
                 <form
                   onSubmit={handleSubmit}
                   className="flex flex-col gap-4 p-4 sm:p-6 md:overflow-y-auto w-full md:w-[55%] md:border-r md:border-slate-100"
                 >
                   <input type="hidden" name="imageUrl" value={imageUrl} />
-
-                  {/* 📱 IMAGEN UPLOADER MÓVIL (Solo se ve en pantallas < md) */}
                   <div className="md:hidden flex flex-col gap-3 mb-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                       <ImageIcon className="w-3.5 h-3.5" /> Fotografía del Producto
@@ -298,8 +285,6 @@ export function CatalogoClient({
                       </div>
                     )}
                   </div>
-
-                  {/* Nombre */}
                   <div>
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Nombre del producto</label>
                     <input
@@ -310,8 +295,6 @@ export function CatalogoClient({
                       className="w-full mt-1 border-b-2 border-slate-200 py-1.5 focus:border-emerald-500 focus:outline-none font-medium text-slate-900 placeholder:text-slate-300 bg-transparent text-sm"
                     />
                   </div>
-
-                  {/* Descripción */}
                   <div>
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Descripción</label>
                     <textarea
@@ -322,8 +305,6 @@ export function CatalogoClient({
                       className="w-full mt-1 border-b-2 border-slate-200 py-1.5 focus:border-emerald-500 focus:outline-none text-slate-700 bg-transparent resize-none text-sm"
                     />
                   </div>
-
-                  {/* Ingredientes */}
                   <div>
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Ingredientes activos</label>
                     <textarea
@@ -334,8 +315,6 @@ export function CatalogoClient({
                       className="w-full mt-1 border-b-2 border-slate-200 py-1.5 focus:border-emerald-500 focus:outline-none text-slate-700 bg-transparent resize-none text-sm"
                     />
                   </div>
-
-                  {/* Categoría */}
                   <div>
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Categoría</label>
                     <select
@@ -349,9 +328,6 @@ export function CatalogoClient({
                       ))}
                     </select>
                   </div>
-
-                  {/* Precios */}
-                  {/* 📱 Responsivo: 1 columna en móviles muy pequeños, 2 columnas desde 'sm' */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Precio referencial (S/)</label>
@@ -378,8 +354,6 @@ export function CatalogoClient({
                       />
                     </div>
                   </div>
-
-                  {/* Planes */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1">
@@ -421,7 +395,6 @@ export function CatalogoClient({
                       })}
                     </div>
                   </div>
-
                   <button
                     type="submit"
                     disabled={isSubmitting}
@@ -431,8 +404,6 @@ export function CatalogoClient({
                     {isSubmitting ? "Guardando..." : "Guardar Producto"}
                   </button>
                 </form>
-
-                {/* 🖥️ Columna imagen DESKTOP (Solo se ve en md en adelante) */}
                 <div className="hidden md:flex flex-col md:w-[45%] bg-slate-50 p-6 gap-4 overflow-y-auto">
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5" /> Fotografía del Producto
@@ -471,7 +442,6 @@ export function CatalogoClient({
         </Portal>
       )}
 
-      {/* ── MODAL ELIMINAR ── */}
       {deleteModal.isOpen && (
         <Portal>
           <div

@@ -17,12 +17,10 @@ export async function sendContactForm(data: {
 }) {
   try {
     const parsed = schema.parse(data);
-
     const html = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 32px; border-radius: 16px;">
         <h2 style="color: #0f172a; margin-bottom: 8px;">📬 Nuevo mensaje de contacto</h2>
         <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Recibido desde el formulario de Mascotiq</p>
-
         <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <tr style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 12px 16px; font-size: 12px; font-weight: bold; color: #94a3b8; text-transform: uppercase; width: 100px;">Nombre</td>
@@ -41,21 +39,18 @@ export async function sendContactForm(data: {
             <td style="padding: 12px 16px; color: #475569; line-height: 1.6; white-space: pre-wrap;">${parsed.message}</td>
           </tr>
         </table>
-
         <p style="margin-top: 24px; font-size: 12px; color: #94a3b8; text-align: center;">
           © ${new Date().getFullYear()} Mascotiq — Panel de Contacto
         </p>
       </div>
     `;
-
     await sendEmail({
       to: process.env.GMAIL_USER!,
       subject: `[Mascotiq] ${parsed.subject} — de ${parsed.name}`,
       html,
     });
-
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.errors[0].message };
     }

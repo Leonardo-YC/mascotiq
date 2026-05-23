@@ -10,48 +10,86 @@ import WelcomeEmail from "@/emails/WelcomeEmail";
 import PaymentFailedEmail from "@/emails/PaymentFailedEmail";
 import { render } from "@react-email/components";
 
+interface StripeSubscriptionData {
+  id: string;
+  status: string;
+  current_period_end: number;
+  items: {
+    data: Array<{
+      price: {
+        id: string;
+      };
+    }>;
+  };
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const headersList = await headers();
-  const signature = headersList.get("Stripe-Signature") as string;
+  const signature = headersList.get("Stripe-Signature");
+
+  if (!signature) {
+    return new NextResponse("Falta la firma de Stripe", { status: 400 });
+  }
 
   let event: Stripe.Event;
+
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (error: any) {
-    console.error("⚠️ Error de Webhook:", error.message);
-    return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    console.error("⚠️ Error de Webhook:", errorMessage);
+    return new NextResponse(`Webhook Error: ${errorMessage}`, { status: 400 });
   }
 
   try {
     switch (event.type) {
-
-      // ── 1. Checkout completado: crea suscripción, primer pedido, email bienvenida
+      // ── 1. Checkout completado
       case "checkout.session.completed": {
-        const session = event.data.object as any;
+        const session = event.data.object as Stripe.Checkout.Session & {
+          subscription: string;
+          customer: string;
+        };
 
-        if (session.metadata?.userId && session.metadata?.petId) {
+        const userId = session.metadata?.userId;
+        const petIdStr = session.metadata?.petId;
+
+        if (userId && petIdStr) {
           const stripeSubscriptionId = session.subscription;
-          const stripeCustomerId = session.customer as string;
+          const stripeCustomerId = session.customer;
 
-          const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId) as any;
-          const stripePriceId = subscription.items.data[0].price.id;
+          // FIX: Verificamos si esta suscripción ya fue creada (por el dashboard fallback)
+          // antes de intentar insertarla, evitando unique constraint violations e infinitos reintentos.
+          const existingSub = await db
+            .select({ id: subscriptions.id })
+            .from(subscriptions)
+            .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+            .limit(1);
+
+          if (existingSub.length > 0) {
+            console.log("ℹ️ Suscripción ya existe (creada por el dashboard). Webhook ignorado.");
+            break;
+          }
+
+          const subscription = (await stripe.subscriptions.retrieve(
+            stripeSubscriptionId
+          )) as unknown as StripeSubscriptionData;
+
+          const stripePriceId = subscription.items.data[0]?.price.id;
+
           if (!stripePriceId) throw new Error("No se encontró el ID del precio");
 
-          // FIX: Guardar el stripeCustomerId en la tabla users
-          // Esto es lo que necesita openCustomerPortal para abrir el portal
           if (stripeCustomerId) {
             await db
               .update(users)
               .set({ stripeCustomerId })
-              .where(eq(users.id, session.metadata.userId));
+              .where(eq(users.id, userId));
           }
 
-          // Buscar o crear el plan en nuestra BD
           let planRecord = await db
             .select()
             .from(plans)
@@ -59,31 +97,30 @@ export async function POST(req: Request) {
             .limit(1);
 
           if (planRecord.length === 0) {
-            const priceData = await stripe.prices.retrieve(stripePriceId) as any;
-            const productData = await stripe.products.retrieve(priceData.product) as any;
+            const priceData = await stripe.prices.retrieve(stripePriceId);
+            const productData = await stripe.products.retrieve(priceData.product as string);
+
             const [newPlan] = await db
               .insert(plans)
               .values({
                 name: productData.name,
-                price: (priceData.unit_amount / 100).toFixed(2),
+                price: ((priceData.unit_amount ?? 0) / 100).toFixed(2),
                 stripePriceId,
-                stripeProductId: priceData.product,
-                interval: priceData.recurring?.interval || "monthly",
+                stripeProductId: priceData.product as string,
+                interval: (priceData.recurring?.interval as string) || "monthly",
                 isActive: true,
               })
               .returning();
             planRecord = [newPlan];
           }
 
-          const periodEnd = subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000)
-            : new Date();
+          const periodEnd = new Date(subscription.current_period_end * 1000);
 
           const [newSub] = await db
             .insert(subscriptions)
             .values({
-              userId: session.metadata.userId,
-              petId: parseInt(session.metadata.petId),
+              userId,
+              petId: parseInt(petIdStr, 10),
               planId: planRecord[0].id,
               stripeSubscriptionId,
               status: "active",
@@ -91,7 +128,6 @@ export async function POST(req: Request) {
             })
             .returning();
 
-          // Primer pedido mensual
           await db.insert(orders).values({
             subscriptionId: newSub.id,
             status: "Pendiente",
@@ -99,19 +135,9 @@ export async function POST(req: Request) {
 
           console.log("✅ Suscripción y Pedido guardados en Neon DB.");
 
-          // Email de bienvenida
           try {
-            const [userData] = await db
-              .select()
-              .from(users)
-              .where(eq(users.id, session.metadata.userId))
-              .limit(1);
-            const [petData] = await db
-              .select()
-              .from(pets)
-              .where(eq(pets.id, parseInt(session.metadata.petId)))
-              .limit(1);
-
+            const [userData] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+            const [petData] = await db.select().from(pets).where(eq(pets.id, parseInt(petIdStr, 10))).limit(1);
             if (userData && petData) {
               const emailHtml = await render(
                 WelcomeEmail({ ownerName: userData.name, petName: petData.name })
@@ -129,22 +155,27 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── 2. Factura pagada: solo renovaciones (no la primera)
+      // ── 2. Factura pagada
       case "invoice.paid": {
-        const invoice = event.data.object as any;
+        const invoice = event.data.object as Stripe.Invoice & {
+          subscription: string;
+          billing_reason: string;
+        };
+
         if (!invoice.subscription) break;
 
-        // FIX: Ignorar la primera factura (ya manejada por checkout.session.completed)
         if (invoice.billing_reason === "subscription_create") {
-          console.log("ℹ️ Primera factura — se omite (ya manejada por checkout).");
+          console.log("ℹ️ Primera factura — se omite.");
           break;
         }
 
         const stripeSubId = invoice.subscription;
-        const stripeSub = await stripe.subscriptions.retrieve(stripeSubId) as any;
-        const periodEnd = stripeSub.current_period_end
-          ? new Date(stripeSub.current_period_end * 1000)
-          : new Date();
+
+        const stripeSub = (await stripe.subscriptions.retrieve(
+          stripeSubId
+        )) as unknown as StripeSubscriptionData;
+
+        const periodEnd = new Date(stripeSub.current_period_end * 1000);
 
         const [updatedSub] = await db
           .update(subscriptions)
@@ -162,9 +193,9 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── 3. Pago fallido: marca past_due + email alerta
+      // ── 3. Pago fallido
       case "invoice.payment_failed": {
-        const invoice = event.data.object as any;
+        const invoice = event.data.object as Stripe.Invoice & { subscription: string };
         if (!invoice.subscription) break;
 
         const [updatedSub] = await db
@@ -177,12 +208,7 @@ export async function POST(req: Request) {
 
         if (updatedSub) {
           try {
-            const [userData] = await db
-              .select()
-              .from(users)
-              .where(eq(users.id, updatedSub.userId))
-              .limit(1);
-
+            const [userData] = await db.select().from(users).where(eq(users.id, updatedSub.userId)).limit(1);
             if (userData) {
               const emailHtml = await render(
                 PaymentFailedEmail({
@@ -203,9 +229,9 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── 4. Suscripción cancelada (desde portal de Stripe)
+      // ── 4. Suscripción cancelada
       case "customer.subscription.deleted": {
-        const subscription = event.data.object as any;
+        const subscription = event.data.object as unknown as StripeSubscriptionData;
         await db
           .update(subscriptions)
           .set({ status: "canceled" })
@@ -214,18 +240,14 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── 5. Suscripción actualizada (pausa, cambio de plan desde portal)
+      // ── 5. Suscripción actualizada
       case "customer.subscription.updated": {
-        const subscription = event.data.object as any;
-        const periodEnd = subscription.current_period_end
-          ? new Date(subscription.current_period_end * 1000)
-          : new Date();
-
+        const subscription = event.data.object as unknown as StripeSubscriptionData;
+        const periodEnd = new Date(subscription.current_period_end * 1000);
         await db
           .update(subscriptions)
           .set({ status: subscription.status, currentPeriodEnd: periodEnd })
           .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
-
         console.log(`🔄 Suscripción actualizada: estado=${subscription.status}`);
         break;
       }

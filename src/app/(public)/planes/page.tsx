@@ -16,7 +16,6 @@ export default async function PlanesPublicPage({
 
   const { userId } = await auth();
 
-  // Planes activos con sus productos
   const [allPlans, allProducts, allRelations] = await Promise.all([
     db.select().from(plans).where(eq(plans.isActive, true)).orderBy(plans.id),
     db.select().from(products),
@@ -28,10 +27,17 @@ export default async function PlanesPublicPage({
     products: allRelations
       .filter(r => r.planId === plan.id)
       .map(r => allProducts.find(p => p.id === r.productId))
-      .filter(Boolean),
+      .filter((p): p is typeof allProducts[0] => p !== undefined),
   }));
 
-  let userPets: any[] = [];
+  let userPets: {
+    id: number;
+    name: string;
+    species: string;
+    lifeStage: string | null;
+    weightKg: string;
+  }[] = [];
+
   let petActivePlans: { petId: number; planId: number }[] = [];
 
   if (userId) {
@@ -58,7 +64,7 @@ export default async function PlanesPublicPage({
 
   return (
     <PlanesPublicClient
-      plans={enrichedPlans as any}
+      plans={enrichedPlans}
       userPets={userPets}
       userActivePlanIds={userActivePlanIds}
       petActivePlans={petActivePlans}

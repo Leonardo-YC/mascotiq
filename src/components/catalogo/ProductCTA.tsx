@@ -49,31 +49,24 @@ function checkCompatibility(pet: Pet, productId: number, validPlans: ValidPlan[]
       message: `${pet.name} ya recibe este producto en su plan activo.`,
     };
   }
-
   if (pet.lifeStage !== "senior") {
     return {
       ok: false,
       message: `${pet.name} aún no es senior. Cuando llegue a esa etapa podrás asignarle un plan.`,
     };
   }
-
   const expectedPlan = getExpectedPlanName(pet.species, pet.weightKg, pet.lifeStage);
   if (!expectedPlan) return { ok: false, message: "No se pudo determinar el plan correcto." };
-
   const productPlanNames = validPlans.map(vp => vp.planName);
-
   if (productPlanNames.includes(expectedPlan)) return { ok: true };
-
   const productIsForCat = productPlanNames.some(p => p.includes("Gato"));
   const productIsForDog = productPlanNames.some(p => p.includes("Perro"));
-
   if (pet.species === "dog" && productIsForCat) {
     return { ok: false, message: `Este producto es exclusivo para gatos. ${pet.name} necesita el ${expectedPlan}.` };
   }
   if (pet.species === "cat" && productIsForDog) {
     return { ok: false, message: `Este producto es exclusivo para perros. ${pet.name} necesita el ${expectedPlan}.` };
   }
-
   const w = parseFloat(pet.weightKg || "0").toFixed(1);
   return {
     ok: false,
@@ -90,7 +83,6 @@ export function ProductCTA({
 }) {
   const { userId, isLoaded } = useAuth();
   const isSignedIn = !!userId;
-
   const [pets, setPets] = useState<Pet[]>([]);
   const [loadingPets, setLoadingPets] = useState(false);
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
@@ -124,19 +116,17 @@ export function ProductCTA({
     if (!selectedPetId || !validPlans?.length) return;
     const pet = pets.find(p => p.id === selectedPetId);
     if (!pet) return;
-
     const compat = checkCompatibility(pet, productId, validPlans);
     if (!compat.ok) { setCompatError(compat); return; }
-
     const expectedPlanName = getExpectedPlanName(pet.species, pet.weightKg, pet.lifeStage);
     const targetPlan = validPlans.find(vp => vp.planName === expectedPlanName) || validPlans[0];
-
     setIsRedirecting(true);
     setApiError(null);
     try {
       await createCheckoutSession(selectedPetId, targetPlan.stripePriceId);
-    } catch (err: any) {
-      if (!err?.message?.includes("NEXT_REDIRECT")) {
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      if (!error?.message?.includes("NEXT_REDIRECT")) {
         setIsRedirecting(false);
         setApiError("No se pudo iniciar el proceso. Inténtalo de nuevo.");
       }
@@ -199,8 +189,6 @@ export function ProductCTA({
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
       </div>
-
-      {/* ── MEJORA: Botón de escape cuando ya tiene el producto ── */}
       {compatError?.alreadyHas && (
         <div className="flex flex-col gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4 shadow-sm animate-in fade-in zoom-in-95">
           <div className="flex items-start gap-2.5">
@@ -210,8 +198,8 @@ export function ProductCTA({
               <p className="text-xs text-blue-700 mt-0.5 leading-relaxed font-medium">{compatError.message}</p>
             </div>
           </div>
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 hover:bg-slate-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-slate-900/10 active:scale-[0.98]"
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
@@ -219,18 +207,15 @@ export function ProductCTA({
           </Link>
         </div>
       )}
-
       {compatError && !compatError.alreadyHas && (
         <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3">
           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-800 font-medium leading-relaxed">{compatError.message}</p>
         </div>
       )}
-
       {apiError && (
         <p className="text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded-xl px-3 py-2">{apiError}</p>
       )}
-
       <button onClick={handleCheckout}
         disabled={isRedirecting || !selectedPetId || !!compatError || !validPlans?.length}
         className="w-full flex justify-center items-center gap-2 bg-emerald-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-500 transition-all shadow-md hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
@@ -240,7 +225,6 @@ export function ProductCTA({
           <><ArrowRight className="w-4 h-4" /> Obtener en mi Plan Mensual</>
         )}
       </button>
-
       <Link href="/quiz"
         className="w-full flex justify-center items-center gap-2 border border-slate-200 text-slate-500 py-2.5 rounded-xl font-bold text-xs hover:border-emerald-400 hover:text-emerald-600 transition-all">
         <Activity className="w-3.5 h-3.5" /> Registrar otra mascota

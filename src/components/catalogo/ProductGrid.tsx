@@ -8,7 +8,7 @@ import {
   ChevronDown, ChevronRight as ChevronRightIcon
 } from "lucide-react";
 
-interface ProductWithPlans {
+export interface ProductWithPlans {
   id: number;
   name: string;
   description: string;
@@ -73,7 +73,6 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
   const [selectedDogSize, setSelectedDogSize] = useState<string | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
   const pageSize = useResponsivePageSize();
 
   const categories = Array.from(
@@ -171,16 +170,13 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
 
   return (
     <div className="flex gap-8 items-start animate-in fade-in duration-500">
-      {/* Sidebar desktop */}
       <aside className="w-52 shrink-0 hidden lg:block sticky top-24">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
           <p className="text-sm font-black text-slate-900 mb-4">Filtros</p>
           <FiltersPanel />
         </div>
       </aside>
-
       <div className="flex-1 min-w-0 space-y-4">
-        {/* Búsqueda + filtros móvil */}
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -196,14 +192,14 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
             )}
           </button>
         </div>
-
-        {/* Chips activos */}
         {activeFilterCount > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedSpecies !== "all" && (
               <span className="inline-flex items-center gap-1.5 bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded-full">
                 {selectedSpecies === "dog" ? "Perros" : "Gatos"}
-                <button onClick={() => { setSelectedSpecies("all"); setSelectedDogSize(null); }}><X className="w-3 h-3" /></button>
+                <button onClick={() => { setSelectedSpecies("all"); setSelectedDogSize(null); }}>
+                  <X className="w-3 h-3" />
+                </button>
               </span>
             )}
             {selectedDogSize && (
@@ -220,10 +216,8 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
             )}
           </div>
         )}
-
         <p className="text-xs text-slate-400 font-medium">{filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}</p>
-
-        {/* Grid */}
+        
         {paginated.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
             <ShoppingBag className="w-10 h-10 text-slate-200 mx-auto mb-3" strokeWidth={1} />
@@ -265,7 +259,6 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
                       </div>
                     )}
                   </div>
-                  {/* Precio — ahora basado en el plan */}
                   <div className="px-3 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-end">
                     <div>
                       <p className="text-[9px] text-slate-400 font-extrabold uppercase tracking-tighter">Plan mensual</p>
@@ -283,8 +276,6 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
             })}
           </div>
         )}
-
-        {/* Paginación */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
             <p className="text-xs text-slate-400 font-medium">Página {currentPage} de {totalPages}</p>
@@ -316,7 +307,6 @@ export function ProductGrid({ initialProducts }: { initialProducts: ProductWithP
         )}
       </div>
 
-      {/* Drawer filtros móvil */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-[99999] lg:hidden">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMobileFilters(false)} />

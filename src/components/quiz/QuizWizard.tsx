@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quizSchema, QuizFormData } from "@/core/validators/quiz-schema";
@@ -13,14 +14,21 @@ import { StepSalud } from "./StepSalud";
 
 const STEPS = ["Especie", "Datos", "Salud"];
 
+interface QuizResult {
+  isEligibleForSubscription: boolean;
+  exactPlanName: string | null;
+  categories: string[];
+  message: string;
+  stripePriceId: string | null;
+  planId: number | null;
+}
+
 export function QuizWizard() {
   const router = useRouter();
-
   const [currentStep, setCurrentStep] = useState(0);
   const [petPhotoUrl, setPetPhotoUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [result, setResult] = useState<any>(null);
-
+  const [result, setResult] = useState<QuizResult | null>(null);
   const [leadEmail, setLeadEmail] = useState("");
   const [leadSuccess, setLeadSuccess] = useState(false);
   const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
@@ -30,7 +38,7 @@ export function QuizWizard() {
 
   const form = useForm<QuizFormData>({
     resolver: zodResolver(quizSchema),
-    defaultValues: { name: "", breed: "", isMixed: false, healthConditions: [] } as any,
+    defaultValues: { name: "", breed: "", isMixed: false, healthConditions: [] } as Partial<QuizFormData>,
     mode: "onChange",
   });
 
@@ -47,9 +55,8 @@ export function QuizWizard() {
     setIsSubmitting(true);
     const response = await processQuizSubmission(data, petPhotoUrl || undefined);
     setIsSubmitting(false);
-
     if (response.success && response.pet && response.recommendation) {
-      setResult(response.recommendation);
+      setResult(response.recommendation as QuizResult);
     } else {
       setErrorModal({
         isOpen: true,
@@ -70,25 +77,20 @@ export function QuizWizard() {
     e.preventDefault();
     const values = form.getValues();
     if (!leadEmail.trim()) return;
-    
     setIsSubmitting(true);
-    
     const birthDate = new Date();
     birthDate.setFullYear(birthDate.getFullYear() - Math.floor(values.ageYears || 0));
-
     const response = await saveFutureNotificationLead(
       leadEmail,
       values.name,
       values.species,
       birthDate.toISOString()
     );
-
     setIsSubmitting(false);
     if (response.success) setLeadSuccess(true);
     else setErrorModal({ isOpen: true, message: response.error || "Error guardando el correo." });
   };
 
-  // ── Pantalla de carga ────────────────────────────────────────────────
   if (isSubmitting) {
     return (
       <div className="flex flex-col items-center justify-center space-y-6 min-h-[420px] bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-10">
@@ -101,7 +103,6 @@ export function QuizWizard() {
     );
   }
 
-  // ── Resultados ──────────────────────────────────────────────────────
   if (result) {
     return (
       <div className="max-w-2xl mx-auto animate-in fade-in zoom-in duration-500">
@@ -116,14 +117,13 @@ export function QuizWizard() {
               <p className="text-slate-300 leading-relaxed max-w-lg mx-auto font-medium">{result.message}</p>
             </div>
           </div>
-
           {result.categories.length > 0 && (
             <div className="p-8 border-b border-slate-100">
               <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-emerald-500" /> Áreas de soporte recomendadas
               </h3>
               <div className="flex flex-wrap gap-2">
-                {result.categories.map((cat: string, i: number) => (
+                {result.categories.map((cat, i) => (
                   <div key={i} className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     <span className="text-emerald-900 font-bold text-xs">{cat}</span>
@@ -132,7 +132,6 @@ export function QuizWizard() {
               </div>
             </div>
           )}
-
           <div className="p-8 space-y-5">
             {result.isEligibleForSubscription ? (
               <>
@@ -169,10 +168,11 @@ export function QuizWizard() {
                     <CheckCircle className="w-5 h-5 text-emerald-500" /> ¡Correo registrado correctamente!
                   </div>
                 )}
+                {/* FIX: <a> reemplazado por <Link> de next/link */}
                 <div className="pt-2">
-                  <a href="/catalogo" className="inline-flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-widest hover:text-emerald-700 transition-colors">
+                  <Link href="/catalogo" className="inline-flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-widest hover:text-emerald-700 transition-colors">
                     Ver catálogo preventivo <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             )}
@@ -182,11 +182,9 @@ export function QuizWizard() {
     );
   }
 
-  // ── Formulario multi-paso ────────────────────────────────────────────
   return (
     <>
       <div className="max-w-3xl mx-auto bg-white p-6 sm:p-10 md:p-12 rounded-[2.5rem] shadow-xl border border-slate-100">
-        {/* Barra de progreso */}
         <div className="flex justify-between items-center mb-12 relative px-2 sm:px-4">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 -z-10 rounded-full" />
           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 -z-10 transition-all duration-500 rounded-full"
@@ -210,14 +208,12 @@ export function QuizWizard() {
             </div>
           ))}
         </div>
-
         <form onSubmit={form.handleSubmit(onSubmit)} className="min-h-[340px] flex flex-col justify-between">
           <div>
             {currentStep === 0 && <StepEspecie form={form} />}
             {currentStep === 1 && <StepDatos form={form} petPhotoUrl={petPhotoUrl} setPetPhotoUrl={setPetPhotoUrl} />}
             {currentStep === 2 && <StepSalud form={form} />}
           </div>
-
           <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center mt-12 pt-8 border-t border-slate-100 gap-4">
             <button type="button" onClick={prevStep}
               className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-700 ${currentStep === 0 ? "invisible" : ""}`}>
@@ -237,8 +233,6 @@ export function QuizWizard() {
           </div>
         </form>
       </div>
-
-      {/* Modal Error */}
       {errorModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">

@@ -18,7 +18,6 @@ export async function GET(req: Request) {
       await db.delete(products);
       await db.delete(categories);
       await db.delete(plans);
-
       if (clean && !reset) {
         return NextResponse.json({ message: "🗑️ Base de datos vaciada." });
       }
@@ -29,7 +28,6 @@ export async function GET(req: Request) {
       }
     }
 
-    // ── CATEGORÍAS (8) ──────────────────────────────────────────────
     const [catArticular, catDigestiva, catPiel, catRenal, catCardiaco, catCognitivo, , catVitaminas] =
       await db.insert(categories).values([
         { name: "Salud Articular",       description: "Suplementos para proteger huesos, cartílagos y articulaciones." },
@@ -42,7 +40,6 @@ export async function GET(req: Request) {
         { name: "Vitaminas y Minerales", description: "Complejos multivitamínicos adaptados a la etapa senior." },
       ]).returning();
 
-    // ── PRODUCTOS (12) ──────────────────────────────────────────────
     const [
       pArtPro, pOmega, pProbioAdv, pRenalFelino, pProbioFelino,
       pVitFelino, pArtPeq, pVitPeq, pCardCanino, pVitCanino,
@@ -134,73 +131,69 @@ export async function GET(req: Request) {
       },
     ]).returning();
 
-    // ── PLANES (5) con precios reales ────────────────────────────────
-    const [planGato, planPeq, planMed, planGrande, planGigante] =
-      await db.insert(plans).values([
-        {
-          name: "Plan Senior Gato",
-          description: "Gatos de 7+ años. Soporte renal, digestivo y vitamínico.",
-          price: "89.00",          // S/89/mes
-          stripePriceId: "temp_cat",
-          interval: "monthly",
-          isActive: true,
-        },
-        {
-          name: "Plan Senior Perro Pequeño",
-          description: "Perros <10 kg desde los 9 años. Soporte articular y digestivo.",
-          price: "79.00",          // S/79/mes
-          stripePriceId: "temp_small",
-          interval: "monthly",
-          isActive: true,
-        },
-        {
-          name: "Plan Senior Perro Mediano",
-          description: "Perros 10-25 kg desde los 7 años. Articular, digestivo y piel.",
-          price: "99.00",          // S/99/mes
-          stripePriceId: "temp_med",
-          interval: "monthly",
-          isActive: true,
-        },
-        {
-          name: "Plan Senior Perro Grande",
-          description: "Perros 25-45 kg desde los 6 años. Articular, cardíaco y vitaminas.",
-          price: "129.00",         // S/129/mes
-          stripePriceId: "temp_large",
-          interval: "monthly",
-          isActive: true,
-        },
-        {
-          name: "Plan Senior Perro Gigante",
-          description: "Perros +45 kg desde los 5 años. Corazón, articulaciones y mente.",
-          price: "149.00",         // S/149/mes
-          stripePriceId: "temp_giant",
-          interval: "monthly",
-          isActive: true,
-        },
-      ] as any).returning();
+    type PlanInsert = typeof plans.$inferInsert;
+    const plansData: PlanInsert[] = [
+      {
+        name: "Plan Senior Gato",
+        description: "Gatos de 7+ años. Soporte renal, digestivo y vitamínico.",
+        price: "89.00",
+        stripePriceId: "temp_cat",
+        interval: "monthly",
+        isActive: true,
+      },
+      {
+        name: "Plan Senior Perro Pequeño",
+        description: "Perros <10 kg desde los 9 años. Soporte articular y digestivo.",
+        price: "79.00",
+        stripePriceId: "temp_small",
+        interval: "monthly",
+        isActive: true,
+      },
+      {
+        name: "Plan Senior Perro Mediano",
+        description: "Perros 10-25 kg desde los 7 años. Articular, digestivo y piel.",
+        price: "99.00",
+        stripePriceId: "temp_med",
+        interval: "monthly",
+        isActive: true,
+      },
+      {
+        name: "Plan Senior Perro Grande",
+        description: "Perros 25-45 kg desde los 6 años. Articular, cardíaco y vitaminas.",
+        price: "129.00",
+        stripePriceId: "temp_large",
+        interval: "monthly",
+        isActive: true,
+      },
+      {
+        name: "Plan Senior Perro Gigante",
+        description: "Perros +45 kg desde los 5 años. Corazón, articulaciones y mente.",
+        price: "149.00",
+        stripePriceId: "temp_giant",
+        interval: "monthly",
+        isActive: true,
+      },
+    ];
 
-    // ── RELACIONES PLAN ↔ PRODUCTO ───────────────────────────────────
+    const [planGato, planPeq, planMed, planGrande, planGigante] =
+      await db.insert(plans).values(plansData).returning();
+
     await db.insert(planProducts).values([
-      // Gato (4 productos)
       { planId: planGato.id, productId: pOmega.id },
       { planId: planGato.id, productId: pRenalFelino.id },
       { planId: planGato.id, productId: pProbioFelino.id },
       { planId: planGato.id, productId: pVitFelino.id },
-      // Perro Pequeño (4 productos)
       { planId: planPeq.id, productId: pOmega.id },
       { planId: planPeq.id, productId: pArtPeq.id },
       { planId: planPeq.id, productId: pProbioAdv.id },
       { planId: planPeq.id, productId: pVitPeq.id },
-      // Perro Mediano (3 productos)
       { planId: planMed.id, productId: pOmega.id },
       { planId: planMed.id, productId: pArtPro.id },
       { planId: planMed.id, productId: pProbioAdv.id },
-      // Perro Grande (4 productos)
       { planId: planGrande.id, productId: pOmega.id },
       { planId: planGrande.id, productId: pArtPro.id },
       { planId: planGrande.id, productId: pCardCanino.id },
       { planId: planGrande.id, productId: pVitCanino.id },
-      // Perro Gigante (4 productos)
       { planId: planGigante.id, productId: pOmega.id },
       { planId: planGigante.id, productId: pArtPro.id },
       { planId: planGigante.id, productId: pCardPremium.id },
@@ -210,8 +203,9 @@ export async function GET(req: Request) {
     return NextResponse.json({
       message: "✅ Catálogo sembrado: 8 categorías, 12 productos, 5 planes con precios reales.",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error en seed:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Error desconocido";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

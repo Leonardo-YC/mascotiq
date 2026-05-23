@@ -6,7 +6,17 @@ import { updateOrderStatus } from "@/actions/order-actions";
 
 const PAGE_SIZE = 10;
 
-export function OrderManagerClient({ initialOrders }: { initialOrders: any[] }) {
+export interface AdminOrder {
+  id: number;
+  status: string;
+  trackingNumber: string | null;
+  createdAt: Date;
+  customerName: string | null;
+  customerEmail: string | null;
+  planName: string;
+}
+
+export function OrderManagerClient({ initialOrders }: { initialOrders: AdminOrder[] }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -36,6 +46,7 @@ export function OrderManagerClient({ initialOrders }: { initialOrders: any[] }) 
     setStatusFilter(newFilter);
     setPage(1);
   };
+
   const handleSearch = (v: string) => {
     setSearchTerm(v);
     setPage(1);
@@ -71,7 +82,6 @@ export function OrderManagerClient({ initialOrders }: { initialOrders: any[] }) 
   return (
     <>
       <div className="space-y-4 w-full">
-        {/* 📱 Responsivo: Flex wrap para controles */}
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <div className="bg-white flex-1 p-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3 min-w-0">
             <Search className="w-5 h-5 text-slate-400 ml-1 shrink-0" />
@@ -98,12 +108,9 @@ export function OrderManagerClient({ initialOrders }: { initialOrders: any[] }) 
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
         </div>
-
         <p className="text-xs text-slate-400 font-medium px-1">
           {filteredOrders.length} pedido{filteredOrders.length !== 1 ? "s" : ""}
         </p>
-
-        {/* 📱 Responsivo: Tabla con overflow-x-auto asegurado */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full flex flex-col">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse min-w-[700px]">
@@ -164,8 +171,6 @@ export function OrderManagerClient({ initialOrders }: { initialOrders: any[] }) 
               </tbody>
             </table>
           </div>
-
-          {/* Paginación */}
           {totalPages > 1 && (
             <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-xs text-slate-500 font-medium">
@@ -215,8 +220,6 @@ export function OrderManagerClient({ initialOrders }: { initialOrders: any[] }) 
           )}
         </div>
       </div>
-
-      {/* Modal guía de envío */}
       {trackingModal.isOpen && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in p-4">
           <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl mx-auto">

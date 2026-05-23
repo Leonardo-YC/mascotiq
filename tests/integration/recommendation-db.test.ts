@@ -1,12 +1,37 @@
-/**
- * PRUEBAS DE FUNCIONALIDAD — Motor de Recomendación
- * src/core/engines/__tests__/recommendation-engine.test.ts
- */
-
 import { generateRecommendationPlan } from "@/core/engines/recommendation-engine";
+import { getCatalogoProducts, createProduct, deleteProduct } from "@/actions/catalogo-actions";
+
+// ── Mocks elevados a la raíz del archivo ──────────────────────────────
+jest.mock("next/cache", () => ({
+  revalidatePath: jest.fn()
+}));
+
+jest.mock("@/lib/db/index", () => {
+  // Creamos un builder mock que soporta encadenamiento
+  const mockQueryBuilder = {
+    where: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockResolvedValue([]),
+    orderBy: jest.fn().mockResolvedValue([]),
+    leftJoin: jest.fn().mockReturnThis(),
+    innerJoin: jest.fn().mockReturnThis(),
+    returning: jest.fn().mockResolvedValue([{ id: 1, name: "Test" }]),
+    values: jest.fn().mockReturnThis(),
+    set: jest.fn().mockReturnThis(),
+  };
+
+  return {
+    db: {
+      select: jest.fn().mockReturnValue({
+        from: jest.fn().mockReturnValue(mockQueryBuilder),
+      }),
+      insert: jest.fn().mockReturnValue(mockQueryBuilder),
+      update: jest.fn().mockReturnValue(mockQueryBuilder),
+      delete: jest.fn().mockReturnValue(mockQueryBuilder),
+    },
+  };
+});
 
 describe("Motor de Recomendación — generateRecommendationPlan()", () => {
-
   it("gato senior → Plan Senior Gato", () => {
     const result = generateRecommendationPlan({ species: "cat", lifeStage: "senior", weightKg: 4, healthConditions: [] });
     expect(result.exactPlanName).toBe("Plan Senior Gato");
@@ -50,60 +75,18 @@ describe("Motor de Recomendación — generateRecommendationPlan()", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-/**
- * PRUEBAS DE BASE DE DATOS (con mocks de Drizzle)
- * tests/integration/database.test.ts
- */
-
-// Mock del cliente de BD
-jest.mock("@/lib/db/index", () => ({
-  db: {
-    select: jest.fn().mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          limit: jest.fn().mockResolvedValue([]),
-          orderBy: jest.fn().mockResolvedValue([]),
-        }),
-        orderBy: jest.fn().mockResolvedValue([]),
-        leftJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            limit: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      }),
-    }),
-    insert: jest.fn().mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 1, name: "Test" }]),
-      }),
-    }),
-    update: jest.fn().mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
-      }),
-    }),
-    delete: jest.fn().mockReturnValue({
-      where: jest.fn().mockResolvedValue([]),
-    }),
-  },
-}));
-
 describe("Pruebas de Base de Datos — catálogo actions", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("getCatalogoProducts retorna array vacío si no hay productos", async () => {
-    const { getCatalogoProducts } = await import("@/actions/catalogo-actions");
     const result = await getCatalogoProducts();
     expect(result.success).toBe(true);
     expect(Array.isArray(result.data)).toBe(true);
   });
 
   it("createProduct retorna success: true al crear", async () => {
-    const { createProduct } = await import("@/actions/catalogo-actions");
     const formData = new FormData();
     formData.append("name", "Test Suplemento");
     formData.append("price", "100.00");
@@ -116,36 +99,7 @@ describe("Pruebas de Base de Datos — catálogo actions", () => {
   });
 
   it("deleteProduct retorna success: true al eliminar", async () => {
-    const { deleteProduct } = await import("@/actions/catalogo-actions");
     const result = await deleteProduct(1);
     expect(result.success).toBe(true);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-/**
- * PRUEBAS DE RECUPERACIÓN ANTE FALLOS
- * tests/unit/error-handling.test.ts
- */
-
-describe("Pruebas de Recuperación ante Fallos", () => {
-
-  it("getCatalogoProducts maneja error de BD y retorna success: false", async () => {
-    // Simular fallo de conexión
-    const { db } = await import("@/lib/db/index");
-    (db.select as jest.Mock).mockImplementationOnce(() => {
-      throw new Error("Connection refused");
-    });
-
-    const { getCatalogoProducts } = await import("@/actions/catalogo-actions");
-    const result = await getCatalogoProducts();
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-  });
-
-  it("calculateSeniority no lanza excepciones con valores extremos", async () => {
-    const { calculateSeniority } = await import("@/core/engines/seniority-engine");
-    expect(() => calculateSeniority({ species: "dog", weightKg: 0, ageYears: 0 })).not.toThrow();
-    expect(() => calculateSeniority({ species: "cat", weightKg: 100, ageYears: 50 })).not.toThrow();
   });
 });

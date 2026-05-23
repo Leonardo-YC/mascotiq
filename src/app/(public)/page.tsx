@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight, ShieldCheck, Star, ChevronDown, CheckCircle2,
   Bot, BrainCircuit, HeartPulse, MessageCircle
@@ -7,7 +8,6 @@ import {
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white overflow-hidden">
-
       {/* 1. HERO */}
       <section className="relative bg-emerald-50/30 pt-12 pb-10 lg:pt-16 lg:pb-16 border-b border-emerald-100/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
@@ -17,7 +17,6 @@ export default function Home() {
                 <ShieldCheck className="w-4 h-4 shrink-0" />
                 <span className="truncate">Recomendado por expertos veterinarios</span>
               </div>
-              {/* 📱 Responsivo: text-3xl en móviles ultra pequeños, 4xl en móviles normales */}
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
                 ¿Sabías que un Gran Danés envejece{" "}
                 <span className="text-emerald-600 block mt-1">antes que un Chihuahua?</span>
@@ -45,13 +44,11 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
             <div className="relative w-full max-w-[280px] sm:max-w-sm md:max-w-md mx-auto lg:max-w-none order-1 lg:order-2">
               <div className="absolute inset-0 bg-emerald-400/15 blur-[60px] rounded-full" />
               <div className="relative aspect-square rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
-                <img src="/images/landing/hero-dog.webp" alt="Mascota feliz con Mascotiq" className="w-full h-full object-cover" />
+                <Image src="/images/landing/hero-dog.webp" alt="Mascota feliz con Mascotiq" fill className="object-cover" />
               </div>
-              {/* 📱 Responsivo: Ajustado el bottom y left para que no se salga de la pantalla en móviles */}
               <div className="absolute -bottom-4 left-4 sm:left-auto sm:-bottom-4 sm:right-4 lg:right-auto lg:-left-6 bg-white p-3 sm:p-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-2 sm:gap-3 max-w-[85%] sm:max-w-none">
                 <div className="bg-emerald-50 p-2 rounded-xl shrink-0">
                   <HeartPulse className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" />
@@ -115,7 +112,6 @@ export default function Home() {
           </div>
           <div className="bg-slate-800 border border-slate-700 p-5 sm:p-6 md:p-8 rounded-3xl shadow-2xl">
             <div className="space-y-4 font-medium text-xs sm:text-sm md:text-base w-full">
-              {/* 📱 Responsivo: Ajustados los márgenes ml y mr para que no aprieten el texto en móviles pequeños */}
               <div className="bg-slate-700 p-3 sm:p-4 rounded-2xl rounded-tr-none ml-4 sm:ml-8 md:ml-12 text-slate-100">
                 ¿Mi perro senior puede comer glucosamina si es alérgico al pollo?
               </div>
@@ -127,7 +123,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. TESTIMONIOS — Con las imágenes de clientes (150x150px visualizados como avatares) */}
+      {/* 5. TESTIMONIOS */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-12">
@@ -158,13 +154,14 @@ export default function Home() {
                 <div className="flex text-amber-400 mb-4">
                   {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
                 </div>
-                <p className="text-slate-600 mb-6 italic text-sm sm:text-base leading-relaxed">"{t.text}"</p>
+                <p className="text-slate-600 mb-6 italic text-sm sm:text-base leading-relaxed">{t.text}</p>
                 <div className="flex items-center gap-3">
-                  {/* 📷 Imagen del cliente usando el archivo .webp */}
-                  <img 
-                    src={t.image} 
-                    alt={`Testimonio de ${t.name}`} 
-                    className="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
+                  <Image
+                    src={t.image}
+                    alt={`Testimonio de ${t.name}`}
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
                   />
                   <div>
                     <p className="font-bold text-slate-900 text-sm">{t.name}</p>

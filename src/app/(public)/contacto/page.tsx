@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Send, Mail, MessageCircle, Clock, CheckCircle, AlertTriangle, ChevronDown } from "lucide-react";
+import { Send, Mail, Clock, CheckCircle, AlertTriangle, ChevronDown } from "lucide-react";
 import { sendContactForm } from "@/actions/contact-action";
 
 export default function ContactoPage() {
@@ -30,20 +30,20 @@ export default function ContactoPage() {
     <main className="min-h-screen bg-slate-50 py-10 md:py-16 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto">
 
-        {/* ── Cabecera Limpia y Responsive ── */}
+        {/* ── Cabecera ── */}
         <div className="text-center mb-10 md:mb-14 px-2">
           <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
             Contáctanos
           </h1>
           <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium">
-            Estamos para ayudarte. ¿Tienes dudas sobre los planes o el diagnóstico? 
+            Estamos para ayudarte. ¿Tienes dudas sobre los planes o el diagnóstico?
             Escríbenos y te responderemos en menos de 24 horas.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
 
-          {/* Info rápida (Se apila arriba en móvil, sidebar en PC) */}
+          {/* Info rápida */}
           <div className="space-y-4 md:space-y-5">
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-start gap-4 hover:border-emerald-200 transition-colors">
               <div className="bg-emerald-50 p-2.5 rounded-xl shrink-0">
@@ -80,7 +80,7 @@ export default function ContactoPage() {
             </div>
           </div>
 
-          {/* Formulario (Ocupa 2 columnas en PC) */}
+          {/* Formulario */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-10">
             {success ? (
               <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
@@ -89,8 +89,8 @@ export default function ContactoPage() {
                 <p className="text-slate-500 text-sm max-w-sm font-medium">
                   Recibimos tu mensaje correctamente. Te responderemos muy pronto.
                 </p>
-                <button 
-                  onClick={() => setSuccess(false)} 
+                <button
+                  onClick={() => setSuccess(false)}
                   className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all"
                 >
                   Enviar otro mensaje
@@ -144,9 +144,11 @@ export default function ContactoPage() {
                   />
                 </div>
 
+                {/* FIX: emoji ⚠️ reemplazado por ícono AlertTriangle de lucide-react */}
                 {error && (
-                  <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 animate-in fade-in">
-                    ⚠️ {error}
+                  <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-100 animate-in fade-in flex items-center gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    {error}
                   </p>
                 )}
 
