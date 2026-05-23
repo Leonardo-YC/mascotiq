@@ -58,5 +58,5 @@ jobs:
           DATABASE_URL: "postgres://mock:mock@localhost/mock"
           STRIPE_SECRET_KEY: "sk_test_mock"
           GEMINI_API_KEY: "mock_key"
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_mock"
-          CLERK_SECRET_KEY: "sk_test_mock"
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2FzdWFsLWJvYmNhdC02LmNsZXJrLmFjY291bnRzLmRldiQ"
+          CLERK_SECRET_KEY: "sk_test_mAjECQoJTqWScUZi3GJgADfROdpm5PIYN8QKye2h7O"
